@@ -1,6 +1,3 @@
-
-
-
 CREATE TABLE emails (
     email 	VARCHAR(50) PRIMARY KEY,
     uid		INT NOT NULL,
@@ -35,8 +32,8 @@ CREATE TABLE session(
     sid		SERIAL  PRIMARY KEY,
     uid		INT NOT NULL,
     vgid		INT NOT NULL,
-    sessionStart	D NOT NULL,
-    sessionEnd		DATETIME,
+    sessionStart	timestamp NOT NULL,
+    sessionEnd		timestamp,
     CONSTRAINT fk_ses_uid
 FOREIGN KEY(uid)
 REFERENCES users(uid)
@@ -53,7 +50,7 @@ ON DELETE CASCADE
 CREATE TABLE collections (
     cid		SERIAL PRIMARY KEY,
     uid		INT NOT NULL,
-    name	VARCHAR(x) NOT NULL,
+    name	VARCHAR(20) NOT NULL,
     CONSTRAINT fk_colec_uid
 FOREIGN KEY(uid)
 REFERENCES users(uid)
@@ -63,24 +60,24 @@ ON DELETE CASCADE
 
 CREATE TABLE videogame (
     vgid			SERIAL PRIMARY KEY,
-    title			VARCHAR(x) NOT NULL,
-    esrb_rating		ENUM(‘E’, ‘E10+’, ‘T’, ‘M’, ‘AO’)
+    title			VARCHAR(20) NOT NULL
+--     esrb_rating		enum(‘E’, ‘E10+’, ‘T’, ‘M’, ‘AO’)
 );
 
 CREATE TABLE genre (
     gid		SERIAL PRIMARY KEY,
-    name	VARCHAR(x) NOT NULL
+    name	VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE devpub (
     dpid		SERIAL PRIMARY KEY,
-    name	VARCHAR(x) NOT NULL
+    name	VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE developed (
     dpid        INT NOT NULL,
-    vgid        INT NOT NULL
-);
+    vgid        INT NOT NULL,
+
 
     CONSTRAINT FK_dev_dpid
         FOREIGN KEY (dpid)
