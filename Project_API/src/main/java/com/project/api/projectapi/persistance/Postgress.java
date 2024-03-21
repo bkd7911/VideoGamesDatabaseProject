@@ -1,20 +1,21 @@
 package com.project.api.projectapi.persistance;
 
 import com.jcraft.jsch.*;
-import com.project.api.projectapi.model.Template;
 
-import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.Connection;
 import java.util.Properties;
 import java.sql.SQLException;
 import java.sql.DriverManager;
 
+import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Value;
+
+@Component
 public class Postgress{
 
-    int lport = 5432;
-    int rport = 5432;
+    int lport = 5431;
+    int rport = 5432;// 5432;
     String user;
     String password;
     String databaseName;
@@ -26,17 +27,20 @@ public class Postgress{
 
     public Postgress(@Value("${CS_USERNAME}") String user, @Value("${CS_PASSWORD}") String password, @Value("${DB_NAME}") String databaseName){
         try{
+
             this.user = user;
             this.password = password;
             this.databaseName = databaseName;
+
             java.util.Properties config = new java.util.Properties();
             config.put("StrictHostKeyChecking", "no");
             JSch jsch = new JSch();
-            this.session = jsch.getSession(user, rhost, 22);
-            this.session.setPassword(password);
-            this.session.setConfig(config);
-            this.session.setConfig("PreferredAuthentications","publickey,keyboard-interactive,password");
-            this.session.connect();
+            session = jsch.getSession(user, rhost, 22);
+            session.setPassword(password);
+            session.setConfig(config);
+            session.setConfig("PreferredAuthentications","publickey,keyboard-interactive,password");
+            
+            session.connect();
             System.out.println("Connected");
             int assigned_port = session.setPortForwardingL(lport, "127.0.0.1", rport);
             System.out.println("Port Forwarded");
@@ -49,8 +53,7 @@ public class Postgress{
             props.put("password", password);
 
             Class.forName(driverName);
-            conn = DriverManager.getConnection(url, props);
-            this.stat = conn.createStatement();
+            conn = DriverManager.getConnection(url, user, password);
             System.out.println("Database connection established");
         }catch (Exception e) {
             System.out.println("ERROR at Postgress constructor setup --> " + e);
