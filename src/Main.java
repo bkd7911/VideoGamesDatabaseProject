@@ -2,8 +2,8 @@ import java.sql.*;
 import java.util.*;
 
 public class Main {
-    static final String JDBC_DRIVER = "com.mysql.jdbc.Driver";
-    static final String DB_URL = "jdbc:mysql://localhost/your_database";
+    static final String JDBC_DRIVER = "org.postgresql.Driver";
+    static final String DB_URL = "jdbc:postgresql://localhost:5432/your_database";
     static final String USER = "username";
     static final String PASS = "password";
 
@@ -13,7 +13,7 @@ public class Main {
         Statement stmt = null;
 
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName(JDBC_DRIVER);
             conn = DriverManager.getConnection(DB_URL, USER, PASS);
             stmt = conn.createStatement();
 
