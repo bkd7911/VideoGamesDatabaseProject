@@ -1,21 +1,66 @@
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+
+import java.io.FileReader;
 import java.sql.*;
 import java.util.*;
 
 public class Main {
-    static final String JDBC_DRIVER = "org.postgresql.Driver";
-    static final String DB_URL = "jdbc:postgresql://localhost:5432/your_database";
-    static final String USER = "username";
-    static final String PASS = "password";
+
+    static String currentUID = null;
 
     public static void main(String[] args) {
+
+        int lport = 5432;
+        String rhost = "starbug.cs.rit.edu";
+        int rport = 5432;
+
+        JSONParser parser = new JSONParser();
         Scanner scanner = new Scanner(System.in);
-        Connection conn = null;
+
         Statement stmt = null;
+        Session session;
+        Connection conn = null;
 
         try {
-//            Class.forName(JDBC_DRIVER);
-//            conn = DriverManager.getConnection(DB_URL, USER, PASS);
-//            stmt = conn.createStatement();
+
+            Object obj = parser.parse(new FileReader("credentials.json"));
+
+            JSONObject jsonObject =  (JSONObject) obj;
+
+            String user = (String) jsonObject.get("Username");
+            String password = (String) jsonObject.get("Password");
+            String databaseName = "p320_32";
+
+            String driverName = "org.postgresql.Driver";
+
+            java.util.Properties config = new java.util.Properties();
+            config.put("StrictHostKeyChecking", "no");
+            JSch jsch = new JSch();
+            session = jsch.getSession(user, rhost, 22);
+            session.setPassword(password);
+            session.setConfig(config);
+            session.setConfig("PreferredAuthentications","publickey,keyboard-interactive,password");
+            session.connect();
+            System.out.println("Connected");
+            int assigned_port = session.setPortForwardingL(lport, "127.0.0.1", rport);
+            System.out.println("Port Forwarded");
+
+            // Assigned port could be different from 5432 but rarely happens
+            String url = "jdbc:postgresql://127.0.0.1:"+ assigned_port + "/" + databaseName;
+
+            System.out.println("database Url: " + url);
+            Properties props = new Properties();
+            props.put("user", user);
+            props.put("password", password);
+
+            Class.forName(driverName);
+            conn = DriverManager.getConnection(url, props);
+            System.out.println("Database connection established");
+
+            stmt = conn.createStatement();
 
             while (true) {
                 System.out.println("1. Create Account");
@@ -40,6 +85,8 @@ public class Main {
                         System.out.println("Invalid option.");
                 }
             }
+
+
         } catch (SQLException se) {
             se.printStackTrace();
         } catch (Exception e) {
@@ -57,7 +104,7 @@ public class Main {
         }
     }
 
-    public static void createUser(Statement stmt, Scanner scanner) throws SQLException {
+    private static void createUser(Statement stmt, Scanner scanner) throws SQLException {
         System.out.print("Enter username: ");
         String username = scanner.nextLine();
         System.out.print("Enter password: ");
@@ -74,11 +121,47 @@ public class Main {
         String password = scanner.nextLine();
         String sql = "SELECT * FROM users WHERE username='" + username + "' AND password='" + password + "'";
         ResultSet rs = stmt.executeQuery(sql);
-        if (rs.next()) {
+        int userId = rs.getInt("uid");
+        if (userId != 0) {
+            currentUID = String.valueOf(userId);
             System.out.println("Login successful. Welcome, " + username + "!");
         } else {
             System.out.println("Invalid username or password.");
         }
         rs.close();
+    }
+
+    private static void createCollection(Statement stmt, Scanner scanner) throws SQLException {
+        System.out.print("Enter New Collection Name: ");
+        String collectionName = scanner.nextLine();
+        String sql = "INSERT INTO collections (uid, name) VALUES ('" + currentUID + "', '" + collectionName + "')";
+        stmt.executeUpdate(sql);
+        System.out.println("Colection created successfully.");
+    }
+
+    private static void modifyCollectionName(Statement stmt, Scanner scanner) throws SQLException {
+        System.out.print("Enter Collection Name To Modify: ");
+        String currCollectionName = scanner.nextLine();
+        System.out.print("Enter New Collection Name: ");
+        String newCollectionName = scanner.nextLine();
+        String sql = "UPDATE collections SET name='" + newCollectionName + "' WHERE uid='" + currentUID + "' AND name='" + currCollectionName + "'";
+        stmt.executeUpdate(sql);
+        System.out.println("Colection created successfully.");
+    }
+
+    private static void deleteCollection(Statement stmt, Scanner scanner) throws SQLException {
+        System.out.print("Enter Name of Collection To Delete: ");
+        String collectionName = scanner.nextLine();
+        String sql = "DELETE FROM collections WHERE uid='" + currentUID + "' AND name='" + collectionName + "'";
+        stmt.executeUpdate(sql);
+        System.out.println("Collection deleted successfully.");
+    }
+
+    private static void addVideoGameToCollection(Statement stmt, Scanner scanner) throws SQLException {
+        System.out.print("Enter Name of Collection To Add To: ");
+        String collectionName = scanner.nextLine();
+//        String sql = "DELETE FROM collections WHERE name='" + username + "'";
+//        stmt.executeUpdate(sql);
+        System.out.println("Collection deleted successfully.");
     }
 }
