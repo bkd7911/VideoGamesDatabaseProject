@@ -59,26 +59,12 @@ public class Database {
             props.put("password", password);
 
             Class.forName(driverName);
-            conn = DriverManager.getConnection(url, props);
+            this.conn = DriverManager.getConnection(url, props);
             System.out.println("Database connection established");
-
             // Do something with the database....
 
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (conn != null && !conn.isClosed()) {
-                    System.out.println("Closing Database Connection");
-                    conn.close();
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            if (session != null && session.isConnected()) {
-                System.out.println("Closing SSH Connection");
-                session.disconnect();
-            }
         }
     }
 
