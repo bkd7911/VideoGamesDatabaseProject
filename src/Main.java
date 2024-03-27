@@ -1,7 +1,5 @@
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
 
 import java.io.FileReader;
 import java.sql.*;
