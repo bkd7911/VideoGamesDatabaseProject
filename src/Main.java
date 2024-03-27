@@ -11,98 +11,43 @@ public class Main {
 
     static String currentUID = null;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
 
-        int lport = 5432;
-        String rhost = "starbug.cs.rit.edu";
-        int rport = 5432;
+        Connection conn = new Database().getConn();
 
-        JSONParser parser = new JSONParser();
+        System.out.println("Database connection established");
+
+        Statement stmt = conn.createStatement();
+
         Scanner scanner = new Scanner(System.in);
 
-        Statement stmt = null;
-        Session session;
-        Connection conn = null;
+        while (true) {
+            System.out.println("1. Create Account");
+            System.out.println("2. Login");
+            System.out.println("3. Exit");
+            System.out.print("Choose an option: ");
+            int option = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
 
-        try {
-
-            Object obj = parser.parse(new FileReader("credentials.json"));
-
-            JSONObject jsonObject =  (JSONObject) obj;
-
-            String user = (String) jsonObject.get("Username");
-            String password = (String) jsonObject.get("Password");
-            String databaseName = "p320_32";
-
-            String driverName = "org.postgresql.Driver";
-
-            java.util.Properties config = new java.util.Properties();
-            config.put("StrictHostKeyChecking", "no");
-            JSch jsch = new JSch();
-            session = jsch.getSession(user, rhost, 22);
-            session.setPassword(password);
-            session.setConfig(config);
-            session.setConfig("PreferredAuthentications","publickey,keyboard-interactive,password");
-            session.connect();
-            System.out.println("Connected");
-            int assigned_port = session.setPortForwardingL(lport, "127.0.0.1", rport);
-            System.out.println("Port Forwarded");
-
-            // Assigned port could be different from 5432 but rarely happens
-            String url = "jdbc:postgresql://127.0.0.1:"+ assigned_port + "/" + databaseName;
-
-            System.out.println("database Url: " + url);
-            Properties props = new Properties();
-            props.put("user", user);
-            props.put("password", password);
-
-            Class.forName(driverName);
-            conn = DriverManager.getConnection(url, props);
-            System.out.println("Database connection established");
-
-            stmt = conn.createStatement();
-
-            while (true) {
-                System.out.println("1. Create Account");
-                System.out.println("2. Login");
-                System.out.println("3. Exit");
-                System.out.print("Choose an option: ");
-                int option = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
-
-                switch (option) {
-                    case 1:
-                        createUser(stmt, scanner);
-                        break;
-                    case 2:
-                        loginUser(stmt, scanner);
-                        break;
-                    case 3:
-                        System.out.println("Exiting...");
-                        conn.close();
-                        return;
-                    default:
-                        System.out.println("Invalid option.");
-                }
-            }
-
-
-        } catch (SQLException se) {
-            se.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException se2) {
-            }
-            try {
-                if (conn != null) conn.close();
-            } catch (SQLException se) {
-                se.printStackTrace();
+            switch (option) {
+                case 1:
+                    createUser(stmt, scanner);
+                    break;
+                case 2:
+                    loginUser(stmt, scanner);
+                    break;
+                case 3:
+                    System.out.println("Exiting...");
+                    conn.close();
+                    return;
+                default:
+                    System.out.println("Invalid option.");
             }
         }
+
+
     }
+
 
     private static void createUser(Statement stmt, Scanner scanner) throws SQLException {
         System.out.print("Enter username: ");

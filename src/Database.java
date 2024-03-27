@@ -1,6 +1,7 @@
 import com.jcraft.jsch.*;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,12 +10,22 @@ import java.util.Properties;
 
 public class Database {
 
-    public static void main(String[] args) throws SQLException, IOException {
+    Connection conn;
+    public Database() {
+         Properties secrets = new Properties();
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream("secrets.properties");
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            secrets.load(in);
+            in.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-        Properties secrets = new Properties();
-        FileInputStream in = new FileInputStream("secrets.properties");
-        secrets.load(in);
-        in.close();
 
         int lport = 5432;
         String rhost = "starbug.cs.rit.edu";
@@ -24,7 +35,7 @@ public class Database {
         String databaseName = "p320_32"; //change to your database name
 
         String driverName = "org.postgresql.Driver";
-        Connection conn = null;
+        this.conn = null;
         Session session = null;
         try {
             java.util.Properties config = new java.util.Properties();
@@ -56,15 +67,27 @@ public class Database {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (conn != null && !conn.isClosed()) {
-                System.out.println("Closing Database Connection");
-                conn.close();
+            try {
+                if (conn != null && !conn.isClosed()) {
+                    System.out.println("Closing Database Connection");
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
             if (session != null && session.isConnected()) {
                 System.out.println("Closing SSH Connection");
                 session.disconnect();
             }
         }
+    }
+
+    public Connection getConn() {
+        return conn;
+    }
+
+    public static void main(String[] args) throws SQLException, IOException {
+
     }
 
 }
