@@ -13,9 +13,9 @@ public class Main {
         Statement stmt = null;
 
         try {
-            Class.forName(JDBC_DRIVER);
-            conn = DriverManager.getConnection(DB_URL, USER, PASS);
-            stmt = conn.createStatement();
+//            Class.forName(JDBC_DRIVER);
+//            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+//            stmt = conn.createStatement();
 
             while (true) {
                 System.out.println("1. Create Account");
@@ -57,7 +57,7 @@ public class Main {
         }
     }
 
-    private static void createUser(Statement stmt, Scanner scanner) throws SQLException {
+    public static void createUser(Statement stmt, Scanner scanner) throws SQLException {
         System.out.print("Enter username: ");
         String username = scanner.nextLine();
         System.out.print("Enter password: ");
