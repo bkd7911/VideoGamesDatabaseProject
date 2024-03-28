@@ -1,7 +1,3 @@
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
-
-import java.io.FileReader;
 import java.sql.*;
 import java.util.*;
 
@@ -119,7 +115,7 @@ public class Main {
 
             switch (option) {
                 case 1:
-                    viewCollections(stmt,scanner);
+                    viewCollections(stmt);
                     break;
                 case 2:
                     createCollection(stmt,scanner);
@@ -178,19 +174,19 @@ public class Main {
         String collectionName = scanner.nextLine();
         String sql = "SELECT cid FROM collections WHERE uid='" + currentUID + "' AND name='" + collectionName + "'";
         ResultSet rsCol = stmt.executeQuery(sql);
-        int cid = rsCol.getInt("cid");
 
-        if (cid != 0) {
+        if (rsCol.next()) {
+            int cid = rsCol.getInt("cid");
 
-            System.out.print("Enter Name of Video Game To Add: ");
+            System.out.print("Enter Title of Video Game To Add: ");
             String vgName = scanner.nextLine();
-            String vgSql = "SELECT vgid FROM videogame WHERE name='" + vgName + "'";
+            String vgSql = "SELECT vgid FROM videogame WHERE title='" + vgName + "'";
             ResultSet rsVG = stmt.executeQuery(vgSql);
-            int vgid = rsVG.getInt("vgid");
+            if (rsVG.next()) {
 
-            if (vgid != 0) {
+                int vgid = rsVG.getInt("vgid");
 
-                String chkSql = "SELECT * FROM user_platform WHERE uid='" + currentUID + "' AND pid IS IN " +
+                String chkSql = "SELECT * FROM user_platform WHERE uid='" + currentUID + "' AND pid IN \n" +
                         "(SELECT pid FROM release WHERE vgid='" + vgid + "')";
                 ResultSet rsChk = stmt.executeQuery(chkSql);
 
@@ -222,18 +218,21 @@ public class Main {
     }
 
     private static void deleteVideoGameFromCollection(Statement stmt, Scanner scanner) throws SQLException {
-        System.out.print("Enter Name of Collection To Add To: ");
+        System.out.print("Enter Name of Collection To Delete From: ");
         String collectionName = scanner.nextLine();
         String sql = "SELECT cid FROM collections WHERE uid='" + currentUID + "' AND name='" + collectionName + "'";
         ResultSet rsCol = stmt.executeQuery(sql);
-        int cid = rsCol.getInt("cid");
-        if (cid != 0) {
-            System.out.print("Enter Name of Video Game To Add: ");
+        if (rsCol.next()) {
+
+            int cid = rsCol.getInt("cid");
+
+            System.out.print("Enter Name of Video Game To Delete: ");
             String vgName = scanner.nextLine();
-            String vgSql = "SELECT vgid FROM videogame WHERE name='" + vgName + "'";
+            String vgSql = "SELECT vgid FROM videogame WHERE title='" + vgName + "'";
             ResultSet rsVG = stmt.executeQuery(vgSql);
-            int vgid = rsVG.getInt("vgid");
-            if (vgid != 0) {
+            if (rsVG.next()) {
+                int vgid = rsVG.getInt("vgid");
+
                 String addSql = "DELETE FROM video_game_collection WHERE cid='" + cid + "' AND vgid='" + vgid + "'";
                 stmt.executeUpdate(addSql);
                 System.out.println("Successfully deleted " + vgName + " from Collection " + collectionName);
@@ -248,12 +247,43 @@ public class Main {
         rsCol.close();
     }
 
-    private static void viewCollections(Statement stmt, Scanner scanner) throws SQLException {
+    private static void viewCollections(Statement stmt) throws SQLException {
         System.out.println("--All Collections--");
-        String sql = "SELECT name FROM collections WHERE uid='" + currentUID + "'";
+        String sql = "SELECT name, COUNT(vgid) as numVideoGames,\n" +
+                "       SUM((DATE_PART('day', sessionend - sessionstart) * 24) + DATE_PART('hour', sessionend - sessionstart)) as hourDiff,\n" +
+                "       SUM(DATE_PART('minute', sessionend - sessionstart)) as minuteDiff\n" +
+                "FROM\n" +
+                "    (SELECT c.name, c.uid, c.cid, vgc.vgid, s.sessionstart, s.sessionend\n" +
+                "     FROM collections AS c, video_game_collection AS vgc, session AS s\n" +
+                "     WHERE c.uid = s.uid AND c.cid = vgc.cid AND vgc.vgid = s.vgid) as cv\n" +
+                "WHERE uid = '" + currentUID + "'\n" +
+                "GROUP BY cid, name;";
         ResultSet rsCol = stmt.executeQuery(sql);
         while (rsCol.next()) {
-            System.out.println(rsCol.getString("name"));
+            System.out.println("Collection Name: " + rsCol.getString("name"));
+            System.out.println("\tTotal Games in Collection: " + rsCol.getString("numVideoGames"));
+            int hours = rsCol.getInt("hourDiff");
+            int minutes = rsCol.getInt("minuteDiff");
+
+            if (minutes >= 60) {
+                hours += Math.floorDiv(minutes, 60);
+                minutes = minutes & 60;
+            }
+
+            String hoursStr = String.valueOf(hours);
+            String minutesStr = String.valueOf(minutes);
+
+            if (hours < 10) {
+                hoursStr = '0' + String.valueOf(hours);
+            }
+
+            if (minutes < 10) {
+                minutesStr = '0' + String.valueOf(minutes);
+            }
+
+
+            System.out.println("\tTotal Play Time of Games (HH:MM): " + hoursStr + ":" + minutesStr);
+
         }
         rsCol.close();
     }
