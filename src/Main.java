@@ -1,6 +1,5 @@
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.FileReader;
 import java.sql.*;
@@ -14,6 +13,7 @@ public class Main {
     public static void main(String[] args) throws SQLException {
 
         Connection conn = new Database().getConn();
+        VideoGames vg = new VideoGames();
 
         System.out.println("Database connection established");
 
@@ -23,7 +23,7 @@ public class Main {
         boolean loggedIn = false;
 
         while (!loggedIn) {
-            System.out.println("1. Create Account");
+            System.out.println("\n1. Create Account");
             System.out.println("2. Login");
             System.out.println("3. Exit");
             System.out.print("Choose an option: ");
@@ -49,8 +49,8 @@ public class Main {
 
         }
 
-        while (true) {
-            System.out.println("--Select Menu To Access--");
+        while (true){
+            System.out.println("\n--Select Menu To Access--");
             System.out.println("1. Friends");
             System.out.println("2. Video Games");
             System.out.println("3. Collections");
@@ -63,7 +63,9 @@ public class Main {
                 case 1:
                     break;
                 case 2:
-                    break;
+                    int vgr = vg.VideoGameMenu(stmt, scanner);
+                    if(vgr != 1)
+                        break;
                 case 3:
                     collectionsMenu(stmt, scanner);
                     break;
@@ -123,6 +125,46 @@ public class Main {
         return loggedIn;
     }
 
+    private static void friendsMenu(Statement stmt, Scanner scanner) throws SQLException {
+        while (true) {
+            System.out.println("--Select Friends Action--");
+            System.out.println("1. Find Friends");
+            System.out.println("2. Follow User");
+            System.out.println("3. Unfollow User");
+            System.out.println("4. Return to Main Menu");
+            System.out.print("Choose an option: ");
+            int option = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (option) {
+                case 1:
+                    findUsersByEmail(stmt,scanner);
+                    break;
+                case 2:
+                    followUser(stmt,scanner);
+                    break;
+                case 3:
+                    unfollowUser(stmt,scanner);
+                    break;
+                case 4:
+                    System.out.println("Returning to Main Menu...");
+                    return;
+                default:
+                    System.out.println("Invalid option.");
+            }
+        }
+    }
+
+    private static void findUsersByEmail(Statement stmt, Scanner scanner) throws SQLException {
+
+    }
+
+    private static void followUser(Statement stmt, Scanner scanner) throws SQLException {
+    }
+
+    private static void unfollowUser(Statement stmt, Scanner scanner) throws SQLException {
+    }
+
     private static void collectionsMenu(Statement stmt, Scanner scanner) throws SQLException {
         while (true) {
             System.out.println("--Select Collections Action--");
@@ -139,7 +181,7 @@ public class Main {
 
             switch (option) {
                 case 1:
-                    viewCollections(stmt,scanner);
+                    viewCollections(stmt);
                     break;
                 case 2:
                     createCollection(stmt,scanner);
@@ -198,19 +240,19 @@ public class Main {
         String collectionName = scanner.nextLine();
         String sql = "SELECT cid FROM collections WHERE uid='" + currentUID + "' AND name='" + collectionName + "'";
         ResultSet rsCol = stmt.executeQuery(sql);
-        int cid = rsCol.getInt("cid");
 
-        if (cid != 0) {
+        if (rsCol.next()) {
+            int cid = rsCol.getInt("cid");
 
-            System.out.print("Enter Name of Video Game To Add: ");
+            System.out.print("Enter Title of Video Game To Add: ");
             String vgName = scanner.nextLine();
-            String vgSql = "SELECT vgid FROM videogame WHERE name='" + vgName + "'";
+            String vgSql = "SELECT vgid FROM videogame WHERE title='" + vgName + "'";
             ResultSet rsVG = stmt.executeQuery(vgSql);
-            int vgid = rsVG.getInt("vgid");
+            if (rsVG.next()) {
 
-            if (vgid != 0) {
+                int vgid = rsVG.getInt("vgid");
 
-                String chkSql = "SELECT * FROM user_platform WHERE uid='" + currentUID + "' AND pid IS IN " +
+                String chkSql = "SELECT * FROM user_platform WHERE uid='" + currentUID + "' AND pid IN \n" +
                         "(SELECT pid FROM release WHERE vgid='" + vgid + "')";
                 ResultSet rsChk = stmt.executeQuery(chkSql);
 
@@ -242,18 +284,21 @@ public class Main {
     }
 
     private static void deleteVideoGameFromCollection(Statement stmt, Scanner scanner) throws SQLException {
-        System.out.print("Enter Name of Collection To Add To: ");
+        System.out.print("Enter Name of Collection To Delete From: ");
         String collectionName = scanner.nextLine();
         String sql = "SELECT cid FROM collections WHERE uid='" + currentUID + "' AND name='" + collectionName + "'";
         ResultSet rsCol = stmt.executeQuery(sql);
-        int cid = rsCol.getInt("cid");
-        if (cid != 0) {
-            System.out.print("Enter Name of Video Game To Add: ");
+        if (rsCol.next()) {
+
+            int cid = rsCol.getInt("cid");
+
+            System.out.print("Enter Name of Video Game To Delete: ");
             String vgName = scanner.nextLine();
-            String vgSql = "SELECT vgid FROM videogame WHERE name='" + vgName + "'";
+            String vgSql = "SELECT vgid FROM videogame WHERE title='" + vgName + "'";
             ResultSet rsVG = stmt.executeQuery(vgSql);
-            int vgid = rsVG.getInt("vgid");
-            if (vgid != 0) {
+            if (rsVG.next()) {
+                int vgid = rsVG.getInt("vgid");
+
                 String addSql = "DELETE FROM video_game_collection WHERE cid='" + cid + "' AND vgid='" + vgid + "'";
                 stmt.executeUpdate(addSql);
                 System.out.println("Successfully deleted " + vgName + " from Collection " + collectionName);
@@ -268,12 +313,44 @@ public class Main {
         rsCol.close();
     }
 
-    private static void viewCollections(Statement stmt, Scanner scanner) throws SQLException {
+    private static void viewCollections(Statement stmt) throws SQLException {
         System.out.println("--All Collections--");
-        String sql = "SELECT name FROM collections WHERE uid='" + currentUID + "'";
+        String sql = "SELECT name, COUNT(vgid) as numVideoGames,\n" +
+                "       SUM((DATE_PART('day', sessionend - sessionstart) * 24) + DATE_PART('hour', sessionend - sessionstart)) as hourDiff,\n" +
+                "       SUM(DATE_PART('minute', sessionend - sessionstart)) as minuteDiff\n" +
+                "FROM\n" +
+                "    (SELECT c.name, c.uid, c.cid, vgc.vgid, s.sessionstart, s.sessionend\n" +
+                "     FROM collections AS c, video_game_collection AS vgc, session AS s\n" +
+                "     WHERE c.uid = s.uid AND c.cid = vgc.cid AND vgc.vgid = s.vgid) as cv\n" +
+                "WHERE uid = '" + currentUID + "'\n" +
+                "GROUP BY cid, name\n" +
+                "ORDER BY name ASC;";
         ResultSet rsCol = stmt.executeQuery(sql);
         while (rsCol.next()) {
-            System.out.println(rsCol.getString("name"));
+            System.out.println("Collection Name: " + rsCol.getString("name"));
+            System.out.println("\tTotal Games in Collection: " + rsCol.getString("numVideoGames"));
+            int hours = rsCol.getInt("hourDiff");
+            int minutes = rsCol.getInt("minuteDiff");
+
+            if (minutes >= 60) {
+                hours += Math.floorDiv(minutes, 60);
+                minutes = minutes & 60;
+            }
+
+            String hoursStr = String.valueOf(hours);
+            String minutesStr = String.valueOf(minutes);
+
+            if (hours < 10) {
+                hoursStr = '0' + String.valueOf(hours);
+            }
+
+            if (minutes < 10) {
+                minutesStr = '0' + String.valueOf(minutes);
+            }
+
+
+            System.out.println("\tTotal Play Time of Games (HH:MM): " + hoursStr + ":" + minutesStr);
+
         }
         rsCol.close();
     }
