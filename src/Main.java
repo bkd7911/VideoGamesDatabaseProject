@@ -8,16 +8,17 @@ public class Main {
     public static void main(String[] args) throws SQLException {
 
         Connection conn = new Database().getConn();
+        VideoGames vg = new VideoGames();
 
         System.out.println("Database connection established");
 
         Statement stmt = conn.createStatement();
-
+    
         Scanner scanner = new Scanner(System.in);
         boolean loggedIn = false;
 
         while (!loggedIn) {
-            System.out.println("1. Create Account");
+            System.out.println("\n1. Create Account");
             System.out.println("2. Login");
             System.out.println("3. Exit");
             System.out.print("Choose an option: ");
@@ -44,8 +45,8 @@ public class Main {
 
         }
 
-        while (true) {
-            System.out.println("--Select Menu To Access--");
+        while (true){
+            System.out.println("\n--Select Menu To Access--");
             System.out.println("1. Friends");
             System.out.println("2. Video Games");
             System.out.println("3. Collections");
@@ -58,7 +59,9 @@ public class Main {
                 case 1:
                     break;
                 case 2:
-                    break;
+                    int vgr = vg.VideoGameMenu(stmt, scanner);
+                    if(vgr != 1)
+                        break;
                 case 3:
                     collectionsMenu(stmt, scanner);
                     break;
@@ -80,7 +83,7 @@ public class Main {
         String username = scanner.nextLine();
         System.out.print("Enter password: ");
         String password = scanner.nextLine();
-        String uid = "123";
+        String uid = "143";
         String sql = "INSERT INTO test (uid, username, password) VALUES ('" + uid + "', '" + username + "', '" + password + "')";
         stmt.executeUpdate(sql);
         System.out.println("Account created successfully.");
