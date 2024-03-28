@@ -4,6 +4,7 @@ import com.jcraft.jsch.Session;
 import java.io.FileReader;
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 public class Main {
 
@@ -84,8 +85,17 @@ public class Main {
         String username = scanner.nextLine();
         System.out.print("Enter password: ");
         String password = scanner.nextLine();
-        String uid = "123";
-        String sql = "INSERT INTO test (uid, username, password) VALUES ('" + uid + "', '" + username + "', '" + password + "')";
+        System.out.print("Enter first name: ");
+        String first_name = scanner.nextLine();
+        System.out.print("Enter last name: ");
+        String last_name = scanner.nextLine();
+
+        String creationDate = new Date().toString();
+        String lastAccessData = new Date().toString();
+
+
+        String sql = "INSERT INTO users (username, first_name, last_name, creation_date, last_access_date, password) " +
+                "VALUES ('" + username + "', '" + first_name + "', '" + last_name + "', '" + creationDate + "', '" + lastAccessData + "', '" + password + "')";
         stmt.executeUpdate(sql);
         System.out.println("Account created successfully.");
     }
