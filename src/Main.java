@@ -1,8 +1,6 @@
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.Session;
+
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.io.FileReader;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -162,7 +160,7 @@ public class Main {
     }
 
     private static void findUsersByEmail(Statement stmt, Scanner scanner) throws SQLException {
-        System.out.print("Enter Email of Users To Find: ");
+        System.out.print("Search Users By Email: ");
         String email = scanner.nextLine();
         String sql = "SELECT username, email FROM users as u\n" +
                 "    INNER JOIN (SELECT uid, email FROM emails WHERE email LIKE '%" + email + "%') as e\n" +
@@ -209,9 +207,9 @@ public class Main {
         stmt.executeQuery(usrSql);
         ResultSet rsUsr = stmt.getResultSet();
         if (rsUsr.next()) {
-            String unfllwSql = "DELETE FROM friends WHERE uid1='" + currentUID + "'AND uid2= '" + rsUsr.getString("uid") + "')";
+            String unfllwSql = "DELETE FROM friends WHERE uid1='" + currentUID + "'AND uid2= '" + rsUsr.getString("uid") + "'";
             stmt.executeUpdate(unfllwSql);
-            System.out.println("Friend deleted successfully.");
+            System.out.println("Friend removed successfully.");
         } else {
             System.out.println("User with Given Username Does Not Exist.");
         }
