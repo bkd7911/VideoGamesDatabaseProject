@@ -56,6 +56,7 @@ public class Main {
 
             switch (option) {
                 case 1:
+                    friendsMenu(stmt,scanner);
                     break;
                 case 2:
                     break;
@@ -133,13 +134,60 @@ public class Main {
     }
 
     private static void findUsersByEmail(Statement stmt, Scanner scanner) throws SQLException {
-
+        System.out.print("Enter Email of Users To Find: ");
+        String email = scanner.nextLine();
+        String sql = "SELECT username, email FROM users as u\n" +
+                "    INNER JOIN (SELECT uid, email FROM emails WHERE email LIKE '%" + email + "%') as e\n" +
+                "    ON u.uid = e.uid";
+        ResultSet rs = stmt.executeQuery(sql);
+        if (rs.next()) {
+            System.out.println("--Users Found--");
+            String usernameStr = rs.getString("username");
+            String emailStr = rs.getString("email");
+            System.out.println("User: " + usernameStr + ", Email: " + emailStr);
+            while (rs.next()) {
+                usernameStr = rs.getString("username");
+                emailStr = rs.getString("email");
+                System.out.println("User: " + usernameStr + ", Email: " + emailStr);
+            }
+        } else {
+            System.out.println("No Users Found With that Email.");
+        }
+        rs.close();
     }
 
     private static void followUser(Statement stmt, Scanner scanner) throws SQLException {
+        System.out.print("Enter Username of User To Follow: ");
+        String username = scanner.nextLine();
+
+        String usrSql = "SELECT uid FROM users WHERE username = '" + username + "'";
+        stmt.executeQuery(usrSql);
+        ResultSet rsUsr = stmt.getResultSet();
+        if (rsUsr.next()) {
+            String fllwSql = "INSERT INTO friends (uid1, uid2) VALUES ('" + currentUID + "', '" + rsUsr.getString("uid") + "')";
+            stmt.executeUpdate(fllwSql);
+            System.out.println("Friend added successfully.");
+        } else {
+            System.out.println("User with Given Username Does Not Exist.");
+        }
+        rsUsr.close();
     }
 
     private static void unfollowUser(Statement stmt, Scanner scanner) throws SQLException {
+        System.out.print("Enter Username of User To Unfollow: ");
+        String username = scanner.nextLine();
+
+        String usrSql = "SELECT uid FROM users WHERE username = '" + username + "'";
+        stmt.executeQuery(usrSql);
+        ResultSet rsUsr = stmt.getResultSet();
+        if (rsUsr.next()) {
+            String unfllwSql = "DELETE FROM friends WHERE uid1='" + currentUID + "'AND uid2= '" + rsUsr.getString("uid") + "')";
+            stmt.executeUpdate(unfllwSql);
+            System.out.println("Friend deleted successfully.");
+        } else {
+            System.out.println("User with Given Username Does Not Exist.");
+        }
+        rsUsr.close();
     }
 
     private static void collectionsMenu(Statement stmt, Scanner scanner) throws SQLException {
