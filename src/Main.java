@@ -105,6 +105,46 @@ public class Main {
         rs.close();
     }
 
+    private static void friendsMenu(Statement stmt, Scanner scanner) throws SQLException {
+        while (true) {
+            System.out.println("--Select Friends Action--");
+            System.out.println("1. Find Friends");
+            System.out.println("2. Follow User");
+            System.out.println("3. Unfollow User");
+            System.out.println("4. Return to Main Menu");
+            System.out.print("Choose an option: ");
+            int option = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (option) {
+                case 1:
+                    findUsersByEmail(stmt,scanner);
+                    break;
+                case 2:
+                    followUser(stmt,scanner);
+                    break;
+                case 3:
+                    unfollowUser(stmt,scanner);
+                    break;
+                case 4:
+                    System.out.println("Returning to Main Menu...");
+                    return;
+                default:
+                    System.out.println("Invalid option.");
+            }
+        }
+    }
+
+    private static void findUsersByEmail(Statement stmt, Scanner scanner) throws SQLException {
+
+    }
+
+    private static void followUser(Statement stmt, Scanner scanner) throws SQLException {
+    }
+
+    private static void unfollowUser(Statement stmt, Scanner scanner) throws SQLException {
+    }
+
     private static void collectionsMenu(Statement stmt, Scanner scanner) throws SQLException {
         while (true) {
             System.out.println("--Select Collections Action--");
@@ -263,7 +303,8 @@ public class Main {
                 "     FROM collections AS c, video_game_collection AS vgc, session AS s\n" +
                 "     WHERE c.uid = s.uid AND c.cid = vgc.cid AND vgc.vgid = s.vgid) as cv\n" +
                 "WHERE uid = '" + currentUID + "'\n" +
-                "GROUP BY cid, name;";
+                "GROUP BY cid, name\n" +
+                "ORDER BY name ASC;";
         ResultSet rsCol = stmt.executeQuery(sql);
         while (rsCol.next()) {
             System.out.println("Collection Name: " + rsCol.getString("name"));
