@@ -24,6 +24,8 @@ public class Main {
             int option = scanner.nextInt();
             scanner.nextLine(); // Consume newline
 
+
+
             switch (option) {
                 case 1:
                     createUser(stmt, scanner);
@@ -78,7 +80,8 @@ public class Main {
         String username = scanner.nextLine();
         System.out.print("Enter password: ");
         String password = scanner.nextLine();
-        String sql = "INSERT INTO users (username, password) VALUES ('" + username + "', '" + password + "')";
+        String uid = "123";
+        String sql = "INSERT INTO test (uid, username, password) VALUES ('" + uid + "', '" + username + "', '" + password + "')";
         stmt.executeUpdate(sql);
         System.out.println("Account created successfully.");
     }
@@ -88,7 +91,7 @@ public class Main {
         String username = scanner.nextLine();
         System.out.print("Enter password: ");
         String password = scanner.nextLine();
-        String sql = "SELECT * FROM users WHERE username='" + username + "' AND password='" + password + "'";
+        String sql = "SELECT * FROM test WHERE username='" + username + "' AND password='" + password + "'";
         ResultSet rs = stmt.executeQuery(sql);
         if (rs.next()) {
             currentUID = String.valueOf(rs.getInt("uid"));
