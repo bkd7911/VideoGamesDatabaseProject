@@ -1,5 +1,6 @@
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.FileReader;
 import java.sql.*;
@@ -36,8 +37,7 @@ public class Main {
                     createUser(stmt, scanner);
                     break;
                 case 2:
-                    loginUser(stmt, scanner);
-                    loggedIn = true;
+                    loggedIn = loginUser(stmt, scanner);
                     break;
                 case 3:
                     System.out.println("Exiting...");
@@ -84,7 +84,7 @@ public class Main {
         System.out.print("Enter username: ");
         String username = scanner.nextLine();
         System.out.print("Enter password: ");
-        String password = scanner.nextLine();
+        String password = BCrypt.hashpw(scanner.nextLine(), BCrypt.gensalt(10));
         System.out.print("Enter first name: ");
         String first_name = scanner.nextLine();
         System.out.print("Enter last name: ");
@@ -100,20 +100,27 @@ public class Main {
         System.out.println("Account created successfully.");
     }
 
-    private static void loginUser(Statement stmt, Scanner scanner) throws SQLException {
+    private static boolean loginUser(Statement stmt, Scanner scanner) throws SQLException {
+        // TODO Change where the user input is gotten from
+        boolean loggedIn = false;
+
         System.out.print("Enter username: ");
         String username = scanner.nextLine();
         System.out.print("Enter password: ");
         String password = scanner.nextLine();
-        String sql = "SELECT * FROM test WHERE username='" + username + "' AND password='" + password + "'";
+        String sql = "SELECT * FROM users WHERE username='" + username + "'";
         ResultSet rs = stmt.executeQuery(sql);
-        if (rs.next()) {
-            currentUID = String.valueOf(rs.getInt("uid"));
-            System.out.println("Login successful. Welcome, " + username + "!");
+
+        if (rs.next() && BCrypt.checkpw(password,rs.getString("password"))) {
+                System.out.println("Login successful. Welcome, " + username + "!");
+                currentUID = String.valueOf(rs.getInt("uid"));
+                loggedIn = true;
+
         } else {
             System.out.println("Invalid username or password.");
         }
         rs.close();
+        return loggedIn;
     }
 
     private static void collectionsMenu(Statement stmt, Scanner scanner) throws SQLException {
