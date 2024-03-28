@@ -27,7 +27,7 @@ public class Database {
         }
 
 
-        int lport = 5432;
+        int lport = 54362;
         String rhost = "starbug.cs.rit.edu";
         int rport = 5432;
         String user = secrets.getProperty("username"); //change to your username

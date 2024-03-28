@@ -9,7 +9,7 @@ public class VideoGames {
         int option = scanner.nextInt();
         return option;
     } 
-    public int VideoGameMenu(Statement stmt,  Scanner scanner){
+    public int VideoGameMenu(Statement stmt,  Scanner scanner, String currentUID){
         try{
             int inp = -1;
             this.stmt = stmt;
@@ -26,7 +26,7 @@ public class VideoGames {
                     """);
                 inp = getInput("Choose an option: ");
                 switch(inp){
-                    case 1: inp = PlayerView();
+                    case 1: inp = PlayerView(currentUID);
                     case 2: inp = DPView();
                     case 3: return 1;
                     case 4: return 0;
@@ -39,7 +39,7 @@ public class VideoGames {
         return 0;
     }
 
-    public int PlayerView() throws SQLException{
+    public int PlayerView(String currentUID) throws SQLException{
         int inp = -1;
         ResultSet res;
         while(inp!=5){
@@ -112,6 +112,20 @@ public class VideoGames {
                     
                     break;
                 case 5:
+                    System.out.print("Enter ID of game: ");
+                    String i = scanner.nextLine();
+                    i = scanner.nextLine();
+                    int vgid = Integer.parseInt(i);
+                    res = stmt.executeQuery("SELECT * FROM videogame WHERE vgid ="+vgid+";");
+                    if (res.next()){
+                        System.out.print("Enter Rating of game: ");
+                        i = scanner.nextLine();
+                        int rating = Integer.parseInt(i);
+                        stmt.executeUpdate("INSERT INTO video_game_rating (uid,vgid, rating) VALUES ("+currentUID+","+vgid+", "+rating+");");
+                    }
+                    else {
+                        System.out.println("Invalid game ID");
+                    }
                     break;
                 case 6:
                     break;

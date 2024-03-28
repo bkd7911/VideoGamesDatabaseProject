@@ -1,5 +1,6 @@
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.FileReader;
 import java.sql.*;
@@ -7,6 +8,10 @@ import java.util.*;
 import java.util.Date;
 
 public class Main {
+
+    public static String getCurrentUID() {
+        return currentUID;
+    }
 
     static String currentUID = null;
 
@@ -63,7 +68,7 @@ public class Main {
                 case 1:
                     break;
                 case 2:
-                    int vgr = vg.VideoGameMenu(stmt, scanner);
+                    int vgr = vg.VideoGameMenu(stmt, scanner, currentUID);
                     if(vgr != 1)
                         break;
                 case 3:
