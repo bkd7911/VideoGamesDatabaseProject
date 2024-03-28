@@ -49,7 +49,8 @@ public class VideoGames {
                     2. Search games by rating
                     3. Search games by genre
                     4. Play Game
-                    5. Return to main menu
+                    5. Rate Game
+                    6. Return to main menu
                  """);
             inp = getInput("Choose an option: ");
             switch(inp){
@@ -109,6 +110,10 @@ public class VideoGames {
                     break;
                 case 4:
                     
+                    break;
+                case 5:
+                    break;
+                case 6:
                     break;
             }
         }
