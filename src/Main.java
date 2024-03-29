@@ -43,7 +43,7 @@ public class Main {
                 case 3:
                     System.out.println("Exiting...");
                     conn.close();
-                    return;
+                    System.exit(0);
                 default:
                     System.out.println("Invalid option.");
             }
@@ -98,19 +98,28 @@ public class Main {
         String first_name = scanner.nextLine();
         System.out.print("Enter last name: ");
         String last_name = scanner.nextLine();
+        System.out.print("Enter email: ");
+        String email = scanner.nextLine();
 
         String creationDate = new Date().toString();
-        String lastAccessData = new Date().toString();
+        String lastAccessDate = new Date().toString();
 
 
         String sql = "INSERT INTO users (username, first_name, last_name, creation_date, last_access_date, password) " +
-                "VALUES ('" + username + "', '" + first_name + "', '" + last_name + "', '" + creationDate + "', '" + lastAccessData + "', '" + password + "')";
+                "VALUES ('" + username + "', '" + first_name + "', '" + last_name + "', '" + creationDate + "', '" + lastAccessDate + "', '" + password + "')";
         stmt.executeUpdate(sql);
+        String getUidSql = "SELECT uid FROM users WHERE username='" + username + "'";
+        stmt.executeQuery(getUidSql);
+        ResultSet rs = stmt.getResultSet();
+        if (rs.next()) {
+            String emailSql = "INSERT INTO emails (email, uid) VALUES ('" + email + "', '" + rs.getString("uid") + "')";
+            stmt.executeUpdate(emailSql);
+        }
         System.out.println("Account created successfully.");
+        rs.close();
     }
 
     private static boolean loginUser(Statement stmt, Scanner scanner) throws SQLException {
-        // TODO Change where the user input is gotten from
         boolean loggedIn = false;
 
         System.out.print("Enter username: ");
