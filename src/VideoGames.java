@@ -1,5 +1,7 @@
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
+
 public class VideoGames {
     Statement stmt;
     Scanner scanner;
@@ -109,18 +111,37 @@ public class VideoGames {
                     res.close();
                     break;
                 case 4:
-                    
+                    System.out.print("Enter ID of game: ");
+                    String query = scanner.nextLine();
+                    query = scanner.nextLine();
+                    int vgid = Integer.parseInt(query);
+                    res = stmt.executeQuery("SELECT * FROM videogame WHERE vgid ="+vgid+";");
+                    if (res.next()){
+                        Date sessionStart = new Date();
+                        System.out.println("How long did you play the game for? (in minutes)");
+                        query = scanner.nextLine();
+                        int sessionLength = Integer.parseInt(query);
+                        // Calculate session end time based on the start time and length of session
+                        Date sessionEnd = new Date(sessionStart.getTime() +( sessionLength * 60000L));
+
+                        stmt.executeUpdate("INSERT INTO session (uid, vgid, sessionstart, sessionend) VALUES ("+currentUID+","+vgid+",'"+sessionStart+"','"+sessionEnd+"');");
+
+
+                    }
+                    else {
+                        System.out.println("Invalid game ID");
+                    }
                     break;
                 case 5:
                     System.out.print("Enter ID of game: ");
-                    String i = scanner.nextLine();
-                    i = scanner.nextLine();
-                    int vgid = Integer.parseInt(i);
+                    String ratingVGID = scanner.nextLine();
+                    ratingVGID = scanner.nextLine();
+                    vgid = Integer.parseInt(ratingVGID);
                     res = stmt.executeQuery("SELECT * FROM videogame WHERE vgid ="+vgid+";");
                     if (res.next()){
                         System.out.print("Enter Rating of game: ");
-                        i = scanner.nextLine();
-                        int rating = Integer.parseInt(i);
+                        ratingVGID = scanner.nextLine();
+                        int rating = Integer.parseInt(ratingVGID);
                         stmt.executeUpdate("INSERT INTO video_game_rating (uid,vgid, rating) VALUES ("+currentUID+","+vgid+", "+rating+");");
                     }
                     else {
