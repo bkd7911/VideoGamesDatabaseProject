@@ -16,8 +16,6 @@ public class Main {
     public static void main(String[] args) throws SQLException {
 
         Connection conn = new Database().getConn();
-
-
         System.out.println("Database connection established");
 
         Statement stmt = conn.createStatement();
@@ -52,9 +50,6 @@ public class Main {
 
         }
         menuAccess(scanner,stmt,conn);
-
-
-
     }
 
     private static void menuAccess(Scanner scanner, Statement stmt, Connection conn) throws SQLException {
@@ -79,7 +74,7 @@ public class Main {
                     break;
                 case 2:
                     int vgr = vg.VideoGameMenu(stmt, scanner, currentUID);
-                    break;
+                    if(vgr!=3)break;
                 case 3:
                     c.collectionsMenu(stmt, scanner,currentUID);
                     break;
