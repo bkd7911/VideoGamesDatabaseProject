@@ -92,10 +92,7 @@ public class VideoGames {
                     System.out.print("Enter Genre Name to search by: ");
                     String genre = scanner.nextLine();genre = scanner.nextLine();
                     where = "WHERE genre.name LIKE '%"+genre+"%'";
-                    String additional_join = """
-                            LEFT JOIN video_game_genre ON videogame.vgid = video_game_genre.vgid
-                            LEFT JOIN genre ON genre.gid = video_game_genre.gid
-                            """;
+                    String additional_join = "";
                     System.out.println("The following games have the genre matching: "+ genre);
                     DisplayGame(stmt, additional_join,where, order);
                     break;
@@ -202,8 +199,12 @@ public class VideoGames {
     private void DisplayGame(Statement stmt, String additional_join,String where, String order)throws SQLException{
         ResultSet res = stmt.executeQuery("""
             SELECT title,
+                array_agg( release.curr_price) priceS,
+                array_agg( genre.name ) genreS  ,
+                array_agg( distinct concat(release.release_date )) dateS,
                 array_agg( distinct concat(platforms.name )) platforms,
                 array_agg( distinct concat(devpub.name )) devpubs,
+                
                 SUM(session.sessionend - session.sessionstart) playtime,
                 AVG(video_game_rating.rating) rating
                 FROM videogame
@@ -236,20 +237,14 @@ public class VideoGames {
     private String getOrderString(){
         String retVal="ORDER BY ";
         boolean first = true;
-        boolean coma = false;
         if(sortArr.size()>0){
             for(int i = 0; i<sortArr.size();i++){
                 if(!first)retVal+=" , ";
-                if(sortArr.get(i).equals("date")){
-                    retVal+= "release.release_date ";
-                }else if(sortArr.get(i).equals("genre")){
-                    retVal+= "genre.name ";
-                }else if(sortArr.get(i).equals("price")){
-                    retVal+= "release.curr_price ";
-                }else{
-                    retVal+= sortArr.get(i) + " ";
+                retVal+= sortArr.get(i);
+                if(!sortArr.get(i).equals("title")){
+                    retVal+="S ";
                 }
-                retVal+= dirArr.get(i) + " ";
+                retVal+= " "+dirArr.get(i) + " ";
                 first = false;
             }
         }
@@ -258,7 +253,7 @@ public class VideoGames {
             if(!first)retVal+=" , ";
             retVal += "title ASC ";
         }
-        if(!sortArr.contains("date")) retVal += ",release.release_date ASC ";
+        if(!sortArr.contains("date")) retVal += ", date ASC ";
         System.out.println(retVal);
         return retVal;
     }
@@ -279,8 +274,9 @@ public class VideoGames {
             allCrit.add("price");
             allCrit.add("genre");
             allCrit.add("date");
-
-            switch(getInput("Choose an option: ")){
+            int inp = getInput("Choose an option: ");
+            if(inp==-1){return 0;}
+            switch(inp){
                 case 1:
                     System.out.println("Current Sorting Priority : ");
                     lind = 1;
