@@ -1,5 +1,7 @@
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
+
 public class VideoGames {
     Statement stmt;
     Scanner scanner;
@@ -21,8 +23,9 @@ public class VideoGames {
                     \n--Select action to continue--
                         1. Search for Game  
                         2. Edit Sorting Prioriy 
-                        3. View collections
-                        4. Return to main menu
+                        3. Play / Rate Game
+                        4. View collections
+                        5. Return to main menu
                     """);
                 inp = getInput("Choose an option: ");
                 switch(inp){
@@ -30,8 +33,9 @@ public class VideoGames {
                             if(inp ==1){return 0;}
                             break;
                     case 2: inp = PlayerSortView(); break;
-                    case 3: return 3;
+                    case 3: inp = PlayerView(currentUID); break;
                     case 4: return 0;
+                    case 5: return 0;
                 }
             }
         }catch(Exception e){
@@ -41,6 +45,69 @@ public class VideoGames {
         return 0;
     }
 
+    public int PlayerView(String currentUID) throws SQLException{
+        int inp = -1;
+        ResultSet res;
+        while(inp!=5){
+            System.out.println("""
+                \n--Select action to continue--
+                    1. Play Game
+                    2. Rate Game
+                    3. Return to Video Game menu
+                 """);
+            inp = getInput("Choose an option: ");
+            switch(inp){
+
+                case 1:
+                    System.out.print("Enter ID of game: (Enter 0 for a random game) ");
+                    String query = scanner.nextLine();
+                    query = scanner.nextLine();
+                    int vgid = Integer.parseInt(query);
+                    if(vgid == 0){
+                        res = stmt.executeQuery("SELECT * FROM videogame ORDER BY RANDOM() LIMIT 1;");
+                        if(res.next()){
+                            vgid = res.getInt("vgid");
+                        }
+                    }
+                    res = stmt.executeQuery("SELECT * FROM videogame WHERE vgid ="+vgid+";");
+                    if (res.next()){
+                        Date sessionStart = new Date();
+                        System.out.println("How long did you play the game for? (in minutes)");
+                        query = scanner.nextLine();
+                        int sessionLength = Integer.parseInt(query);
+                        // Calculate session end time based on the start time and length of session
+                        Date sessionEnd = new Date(sessionStart.getTime() +( sessionLength * 60000L));
+
+                        stmt.executeUpdate("INSERT INTO session (uid, vgid, sessionstart, sessionend) VALUES ("+currentUID+","+vgid+",'"+sessionStart+"','"+sessionEnd+"');");
+
+
+                    }
+                    else {
+                        System.out.println("Invalid game ID");
+                    }
+                    break;
+                case 2:
+                    System.out.print("Enter ID of game: ");
+                    String ratingVGID = scanner.nextLine();
+                    ratingVGID = scanner.nextLine();
+                    int ratingVGIDNum = Integer.parseInt(ratingVGID);
+                    res = stmt.executeQuery("SELECT * FROM videogame WHERE vgid ="+ratingVGIDNum+";");
+                    if (res.next()){
+                        System.out.print("Enter Rating of game: ");
+                        ratingVGID = scanner.nextLine();
+                        int rating = Integer.parseInt(ratingVGID);
+                        stmt.executeUpdate("INSERT INTO video_game_rating (uid,vgid, rating) VALUES ("+currentUID+","+ratingVGIDNum+", "+rating+");");
+                    }
+                    else {
+                        System.out.println("Invalid game ID");
+                    }
+                    break;
+                case 3:
+                    return 0;
+            }
+        }
+        return 0;
+    }
     public int PlayerSearchView() throws SQLException{
         int inp = -1;
         ResultSet res;
