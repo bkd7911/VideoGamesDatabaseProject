@@ -16,9 +16,7 @@ public class Main {
     public static void main(String[] args) throws SQLException {
 
         Connection conn = new Database().getConn();
-        VideoGames vg = new VideoGames();
-        Friends f = new Friends();
-        Collections c = new Collections();
+
 
         System.out.println("Database connection established");
 
@@ -53,8 +51,19 @@ public class Main {
             }
 
         }
+        menuAccess(scanner,stmt,conn);
 
+
+
+    }
+
+    private static void menuAccess(Scanner scanner, Statement stmt, Connection conn) throws SQLException {
+        VideoGames vg = new VideoGames();
+        Friends f = new Friends();
+        Collections c = new Collections();
         while (true){
+
+
             System.out.println("\n--Select Menu To Access--");
             System.out.println("1. Friends");
             System.out.println("2. Video Games");
@@ -70,23 +79,20 @@ public class Main {
                     break;
                 case 2:
                     int vgr = vg.VideoGameMenu(stmt, scanner, currentUID);
-                    if(vgr != 1)
-                        break;
+                    break;
                 case 3:
                     c.collectionsMenu(stmt, scanner,currentUID);
                     break;
                 case 4:
                     System.out.println("Exiting...");
                     conn.close();
-                    return;
+                    System.exit(0);
                 default:
                     System.out.println("Invalid option.");
             }
         }
 
-
     }
-
 
     private static void createUser(Statement stmt, Scanner scanner) throws SQLException {
         System.out.print("Enter username: ");
