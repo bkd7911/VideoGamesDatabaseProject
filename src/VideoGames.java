@@ -196,7 +196,7 @@ public class VideoGames {
                             1. Released BEFORE Date
                             2. Released AFTER  Date
                             3. Released  ON    Date
-                        \nFilteration Type: """);
+                        \nFiltration Type: """);
                     int choi = noMisInput(scanner);
                     where = "WHERE release.release_date ='"+dateVal+"'";
                     switch (choi) {
@@ -225,7 +225,7 @@ public class VideoGames {
                             1. Price is less than (inclusive)
                             2. Price is greater than (inclusive)
                             3. Price is exactly
-                        \nFilteration Type: """);
+                        \nFiltration Type: """);
                     choi = noMisInput(scanner);
                     where = "WHERE release.curr_price ="+price;
                     switch (choi) {
