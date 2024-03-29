@@ -28,8 +28,12 @@ public class VideoGames {
                     """);
                 inp = getInput("Choose an option: ");
                 switch(inp){
-                    case 1: inp = PlayerView(currentUID);
-                    case 2: inp = DPView();
+                    case 1:
+                        inp = PlayerView(currentUID);
+                        break;
+                    case 2:
+                        inp = DPView();
+                        break;
                     case 3: return 1;
                     case 4: return 0;
                 }
@@ -149,7 +153,7 @@ public class VideoGames {
                     }
                     break;
                 case 6:
-                    break;
+                    return 0;
             }
         }
         return 0;
