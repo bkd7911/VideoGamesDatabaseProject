@@ -160,26 +160,30 @@ public class Collections {
 
     private void viewCollections(Statement stmt) throws SQLException {
         System.out.println("\n--All Collections--");
-        String sql = "SELECT c.name, COUNT(vgid) as numVideoGames,\n" +
+        String sql = "SELECT c.name, numVideoGames,\n" +
                 "       SUM((DATE_PART('day', sessionend - sessionstart) * 24) + DATE_PART('hour', sessionend - sessionstart)) as hourDiff,\n" +
                 "       SUM(DATE_PART('minute', sessionend - sessionstart)) as minuteDiff\n" +
                 "FROM\n" +
                 "    (SELECT name, cid FROM collections WHERE uid = '" + this.currentUID + "') AS c LEFT JOIN\n" +
-                "    (SELECT c.name, c.uid, c.cid, vgc.vgid, s.sessionstart, s.sessionend\n" +
-                "     FROM collections AS c, video_game_collection AS vgc, session AS s\n" +
+                "    (SELECT cid, COUNT(vgid) as numVideoGames FROM video_game_collection GROUP BY cid) AS vgc ON c.cid = vgc.cid LEFT JOIN\n" +
+                "    (SELECT c.cid, vgc.vgid, s.sessionstart, s.sessionend\n" +
+                "     FROM collections AS c, video_game_collection AS vgc, play_video_game AS s\n" +
                 "     WHERE c.uid = s.uid AND c.cid = vgc.cid AND vgc.vgid = s.vgid) AS cv ON c.cid = cv.cid\n" +
-                "GROUP BY c.cid, c.name\n" +
+                "GROUP BY c.cid, c.name, numVideoGames\n" +
                 "ORDER BY name ASC;";
         ResultSet rsCol = stmt.executeQuery(sql);
         while (rsCol.next()) {
             System.out.println("Collection Name: " + rsCol.getString("name"));
-            System.out.println("\tTotal Games in Collection: " + rsCol.getString("numVideoGames"));
+
+            int numVideoGames = rsCol.getInt("numVideoGames");
+
+            System.out.println("\tTotal Games in Collection: " + numVideoGames);
             int hours = rsCol.getInt("hourDiff");
             int minutes = rsCol.getInt("minuteDiff");
 
             if (minutes >= 60) {
                 hours += Math.floorDiv(minutes, 60);
-                minutes = minutes & 60;
+                minutes = minutes % 60;
             }
 
             String hoursStr = String.valueOf(hours);
