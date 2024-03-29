@@ -98,13 +98,15 @@ public class Main {
         String first_name = scanner.nextLine();
         System.out.print("Enter last name: ");
         String last_name = scanner.nextLine();
+        System.out.print("Enter email: ");
+        String email = scanner.nextLine();
 
         String creationDate = new Date().toString();
-        String lastAccessData = new Date().toString();
+        String lastAccessDate = new Date().toString();
 
 
         String sql = "INSERT INTO users (username, first_name, last_name, creation_date, last_access_date, password) " +
-                "VALUES ('" + username + "', '" + first_name + "', '" + last_name + "', '" + creationDate + "', '" + lastAccessData + "', '" + password + "')";
+                "VALUES ('" + username + "', '" + first_name + "', '" + last_name + "', '" + creationDate + "', '" + lastAccessDate + "', '" + password + "')";
         stmt.executeUpdate(sql);
         System.out.println("Account created successfully.");
     }
