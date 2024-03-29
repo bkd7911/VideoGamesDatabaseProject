@@ -4,6 +4,7 @@ import java.util.Date;
 
 public class VideoGames {
     Statement stmt;
+
     Scanner scanner;
     
     ArrayList<String> dirArr = new ArrayList<String>();
