@@ -5,6 +5,14 @@ import java.sql.*;
 import java.util.*;
 import java.util.Date;
 
+/**
+ * This program is used to interface with our database of
+ * video games and video game related information
+ *
+ * @author Group 32 of CSCI 320, Spring 2024
+ * @author Sam Cordry, Caelen Naas, Pranav Sehgal,
+ *         Bobby Dhanoolal, Cristian Malone
+ */
 public class Main {
 
     public static String getCurrentUID() {
