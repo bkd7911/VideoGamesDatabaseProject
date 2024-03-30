@@ -214,7 +214,7 @@ public class VideoGames {
                     System.out.print("Enter Develepor name to seach by: ");
                     String dev = scanner.nextLine();dev = scanner.nextLine();
                     if(dev.length()==0)dev = "ScipityScapady";
-                    where = "WHERE devpub.name ='%"+dev+"%'";
+                    where = "WHERE devpub.name LIKE '%"+dev+"%'";
                     System.out.println("The following games are made by : "+ dev);
                     DisplayGame(stmt, "",where, order);
                     break;
