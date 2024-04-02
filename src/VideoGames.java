@@ -4,9 +4,16 @@ import java.util.Date;
 
 public class VideoGames {
     Statement stmt;
-
+     String currentUID;
 
     Scanner scanner;
+
+    public VideoGames(Statement stmt, Scanner scanner, String currentUID) {
+        this.stmt = stmt;
+        this.scanner = scanner;
+        this.currentUID = currentUID;
+
+    }
     
     ArrayList<String> dirArr = new ArrayList<String>();
     ArrayList<String> sortArr = new ArrayList<String>();
@@ -25,12 +32,12 @@ public class VideoGames {
         }
     }
     
-    public int VideoGameMenu(Statement stmt,  Scanner scanner, String currentUID){
+    public int VideoGameMenu(){
+
         try{
             int inp = -1;
-            this.stmt = stmt;
-            this.scanner = scanner;
-            
+
+
             while(true){
                 System.out.println("""
                     \n--Select action to continue--
@@ -48,7 +55,7 @@ public class VideoGames {
                     case 2: inp = PlayerSortView();
                             if(inp == 1){return 0;}
                             break;
-                    case 3: inp = PlayerView(currentUID); break;
+                    case 3: inp = PlayerView(this.currentUID); break;
                     case 4: return 3;
                     case 5: sortArr.clear();
                             dirArr.clear();

@@ -15,10 +15,6 @@ import java.util.Date;
  */
 public class Main {
 
-    public static String getCurrentUID() {
-        return currentUID;
-    }
-
     static String currentUID = null;
 
     public static void main(String[] args) throws SQLException {
@@ -61,9 +57,9 @@ public class Main {
     }
 
     private static void menuAccess(Scanner scanner, Statement stmt, Connection conn) throws SQLException {
-        VideoGames vg = new VideoGames();
-        Friends f = new Friends();
-        Collections c = new Collections();
+        VideoGames vg = new VideoGames(stmt, scanner, currentUID);
+        Friends f = new Friends(stmt,scanner,currentUID);
+        Collections c = new Collections(stmt,scanner,currentUID);
         while (true){
 
 
@@ -78,13 +74,13 @@ public class Main {
 
             switch (option) {
                 case 1:
-                    f.friendsMenu(stmt,scanner,currentUID);
+                    f.friendsMenu();
                     break;
                 case 2:
-                    int vgr = vg.VideoGameMenu(stmt, scanner, currentUID);
+                    int vgr = vg.VideoGameMenu();
                     if(vgr!=3)break;
                 case 3:
-                    c.collectionsMenu(stmt, scanner,currentUID);
+                    c.collectionsMenu();
                     break;
                 case 4:
                     System.out.println("Exiting...");

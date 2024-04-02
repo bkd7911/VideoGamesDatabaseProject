@@ -5,11 +5,19 @@ import java.util.Scanner;
 
 public class Collections {
 
+    Statement stmt;
     String currentUID;
+    Scanner scanner;
 
-    public void collectionsMenu(Statement stmt, Scanner scanner, String currentUID) throws SQLException {
-
+    public Collections(Statement stmt, Scanner scanner, String currentUID){
         this.currentUID = currentUID;
+        this.stmt = stmt;
+        this.scanner = scanner;
+
+    }
+
+    public void collectionsMenu() throws SQLException {
+
 
         while (true) {
             System.out.println("\n--Select Collections Action--");

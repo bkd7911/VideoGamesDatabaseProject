@@ -5,11 +5,19 @@ import java.util.Scanner;
 
 public class Friends {
 
+    Statement stmt;
     String currentUID;
 
-    public void friendsMenu(Statement stmt, Scanner scanner, String currentUID) throws SQLException {
-
+    Scanner scanner;
+    public Friends(Statement stmt, Scanner scanner, String currentUID) {
         this.currentUID = currentUID;
+        this.stmt = stmt;
+        this.scanner = scanner;
+    }
+
+    public void friendsMenu() throws SQLException {
+
+
 
         while (true) {
             System.out.println("\n--Select Friends Action--");
