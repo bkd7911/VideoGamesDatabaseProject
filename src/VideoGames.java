@@ -1,20 +1,10 @@
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
-
 public class VideoGames {
     Statement stmt;
-     String currentUID;
-
     Scanner scanner;
-
-    public VideoGames(Statement stmt, Scanner scanner, String currentUID) {
-        this.stmt = stmt;
-        this.scanner = scanner;
-        this.currentUID = currentUID;
-
-    }
-    
+    String currentUID = "";
     ArrayList<String> dirArr = new ArrayList<String>();
     ArrayList<String> sortArr = new ArrayList<String>();
 
@@ -31,18 +21,22 @@ public class VideoGames {
             return -1;
         }
     }
+    // Class Constructor
+    public VideoGames(Statement stmt,  Scanner scanner, String currentUID){
+        this.stmt = stmt;
+            this.scanner = scanner;
+            this.currentUID = currentUID;
+    }
     
+    // Main VideoGameMenu Functionality
     public int VideoGameMenu(){
-
         try{
             int inp = -1;
-
-
             while(true){
                 System.out.println("""
                     \n--Select action to continue--
-                        1. Search for Game  
-                        2. Edit Sorting Prioriy 
+                        1. Search for Games
+                        2. <New Thing>
                         3. Play / Rate Game
                         4. View collections
                         5. Return to main menu
@@ -52,10 +46,10 @@ public class VideoGames {
                     case 1: inp = PlayerSearchView();
                             if(inp == 1){return 0;}
                             break;
-                    case 2: inp = PlayerSortView();
-                            if(inp == 1){return 0;}
+                    case 2: 
                             break;
-                    case 3: inp = PlayerView(this.currentUID); break;
+
+                    case 3: inp = PlayerView(currentUID); break;
                     case 4: return 3;
                     case 5: sortArr.clear();
                             dirArr.clear();
@@ -67,7 +61,8 @@ public class VideoGames {
             return 2;
         }
     }
-
+    
+    // Menu Functionality to play and rate games
     public int PlayerView(String currentUID) throws SQLException{
         int inp = -1;
         ResultSet res;
@@ -87,23 +82,9 @@ public class VideoGames {
                     query = scanner.nextLine();
                     int vgid = Integer.parseInt(query);
                     if(vgid == 0){
-                        System.out.print("Enter Name of Collection to Randomly Choose From: ");
-                        String collectionName = scanner.nextLine();
-                        res = stmt.executeQuery("SELECT cid FROM collections WHERE uid = '" + currentUID + "' AND name = '" + collectionName + "';");
-                        if (res.next()) {
-                            String cid = res.getString("cid");
-                            res = stmt.executeQuery("SELECT * FROM video_game_collection WHERE cid = '" + cid + "' ORDER BY RANDOM() LIMIT 1;");
-                            if (res.next()) {
-                                vgid = res.getInt("vgid");
-                            }
-                            else {
-                                System.out.println("No Games in Collection To Play.");
-                                break;
-                            }
-                        }
-                        else {
-                            System.out.println("No Collection With Given Name.");
-                            break;
+                        res = stmt.executeQuery("SELECT * FROM videogame ORDER BY RANDOM() LIMIT 1;");
+                        if(res.next()){
+                            vgid = res.getInt("vgid");
                         }
                     }
                     res = stmt.executeQuery("SELECT * FROM videogame WHERE vgid ="+vgid+";");
@@ -115,9 +96,7 @@ public class VideoGames {
                         // Calculate session end time based on the start time and length of session
                         Date sessionEnd = new Date(sessionStart.getTime() +( sessionLength * 60000L));
 
-                        stmt.executeUpdate("INSERT INTO play_video_game (uid, vgid, sessionstart, sessionend) VALUES ("+currentUID+","+vgid+",'"+sessionStart+"','"+sessionEnd+"');");
-
-
+                        stmt.executeUpdate("INSERT INTO session (uid, vgid, sessionstart, sessionend) VALUES ("+currentUID+","+vgid+",'"+sessionStart+"','"+sessionEnd+"');");
                     }
                     else {
                         System.out.println("Invalid game ID");
@@ -145,14 +124,15 @@ public class VideoGames {
         }
         return 0;
     }
+    
+    // Menu Functionality to search and sort games
     public int PlayerSearchView() throws SQLException{
         int inp = -1;
         String where = "";
-        String order = getOrderString();
         while(inp!=7){
             System.out.println("""
             \n--Select action to continue--
-                1. Search games by Title  
+                1. Search games by Name  
                 2. Search games by ESRB_rating
                 3. Search games by Genre
                 4. Search games by Platform
@@ -169,29 +149,28 @@ public class VideoGames {
                     String title = scanner.nextLine();title = scanner.nextLine();
                     where = "WHERE videogame.title LIKE '%"+title+"%'";
                     System.out.println("The following games match the name : "+ title);
-                    DisplayGame(stmt,"", where, order);
+                    searchAndSortGame(stmt, where);
                     break;
                 case 2:
                     System.out.print("Enter Rating to seach by( E/E10+/T/M/AO): ");
                     String rat = scanner.nextLine();rat = scanner.nextLine();
                     where = "WHERE videogame.esrb_rating = '"+rat+"'";
                     System.out.println("The following are rated : "+ rat);
-                    DisplayGame(stmt, "",where, order);
+                    searchAndSortGame(stmt, where);
                     break;
                 case 3:
                     System.out.print("Enter Genre Name to search by: ");
                     String genre = scanner.nextLine();genre = scanner.nextLine();
                     where = "WHERE genre.name LIKE '%"+genre+"%'";
-                    String additional_join = "";
                     System.out.println("The following games have the genre matching: "+ genre);
-                    DisplayGame(stmt, additional_join,where, order);
+                    searchAndSortGame(stmt,where);
                     break;
                 case 4:
                     System.out.print("Enter Platform to seach for: ");
                     String plat = scanner.nextLine();plat = scanner.nextLine();
                     where = "WHERE platforms.name ='"+plat+"'";
                     System.out.println("The following are playable on the platform : "+ plat );
-                    DisplayGame(stmt, "",where, order);
+                    searchAndSortGame(stmt, where);
                     break;
                 case 5:                    
                     System.out.print("Enter year of release: ");int year = noMisInput(scanner);
@@ -200,11 +179,11 @@ public class VideoGames {
                     String dateVal=dateFormat(year, month, date);
 
                     System.out.println("""
-                        \n--Select Date Filtration Type--
+                        \n--Select Date Filteration Type--
                             1. Released BEFORE Date
                             2. Released AFTER  Date
                             3. Released  ON    Date
-                        \nFiltration Type: """);
+                        \nFilteration Type: """);
                     int choi = noMisInput(scanner);
                     where = "WHERE release.release_date ='"+dateVal+"'";
                     switch (choi) {
@@ -216,24 +195,24 @@ public class VideoGames {
                             break;
                     }
                     System.out.println("The following are filtered games : ");
-                    DisplayGame(stmt, "",where, order);
+                    searchAndSortGame(stmt, where);
                     break;
                 case 6:
                     System.out.print("Enter Develepor name to seach by: ");
                     String dev = scanner.nextLine();dev = scanner.nextLine();
                     if(dev.length()==0)dev = "ScipityScapady";
-                    where = "WHERE devpub.name LIKE '%"+dev+"%'";
+                    where = "WHERE devpub.name ='%"+dev+"%'";
                     System.out.println("The following games are made by : "+ dev);
-                    DisplayGame(stmt, "",where, order);
+                    searchAndSortGame(stmt, where);
                     break;
                 case 7:
                     System.out.print("Enter price: ");float price = scanner.nextFloat();
                     System.out.println("""
-                        \n--Select Price Filtration Type--
+                        \n--Select Date Filteration Type--
                             1. Price is less than (inclusive)
                             2. Price is greater than (inclusive)
                             3. Price is exactly
-                        \nFiltration Type: """);
+                        \nFilteration Type: """);
                     choi = noMisInput(scanner);
                     where = "WHERE release.curr_price ="+price;
                     switch (choi) {
@@ -245,7 +224,7 @@ public class VideoGames {
                             break;
                     }
                     System.out.println("The following are filtered games : ");
-                    DisplayGame(stmt, "",where, order);
+                    searchAndSortGame(stmt, where);
                     break;
                 case 8:
                     return 0;
@@ -256,7 +235,7 @@ public class VideoGames {
         return 0;
     }
 
-    //Helps stop my eyes from bleeding
+    // Formats Playtime
     private String dateFormat(int y, int m, int d){
         String retVal = "";
         String ys = Integer.toString(y);
@@ -268,15 +247,16 @@ public class VideoGames {
         retVal += ys+ms+ds;
         return retVal+" 00:00:00";
     }
-    //Helps stop my eyes from bleeding
+    
+    // Formats publishers/platforms
     private String none_ify(String in){
         if(in.length()==4)
             return " None ";
         else
             return " "+in;
     }
-
-    //Helps stop my eyes from bleeding
+    
+    // Formats Playtime and Ratings
     private String cut_rat(String in, int ad){
         try{
             in = " ("+in.substring(0,4+ad)+")";     
@@ -285,20 +265,45 @@ public class VideoGames {
         }
         return in;
     }
+    
+    // Prints games search resultset
+    private void printResultSet(ResultSet res) throws SQLException{
+        while(res.next()){
+                String pString = "\n\t-->) Title: '" + res.getString("title");
+                pString += "'  Platforms:" + none_ify(res.getString("platforms"));
+                pString += "  Devs/Pubs:"+ none_ify(res.getString("devpubs"));
+                pString += "  Playtime:" + cut_rat(res.getString("playtime"),1);
+                pString += "  Rating:" + cut_rat(res.getString("rating"),0);
+                System.out.println(pString);
+        }
+    }
+    
     // Joins tables and queries it to print results based on given conditions
-    private void DisplayGame(Statement stmt, String additional_join,String where, String order)throws SQLException{
-        ResultSet res = stmt.executeQuery("""
-            SELECT title, esrb_rating,
-                array_agg( release.curr_price) priceS,
-                array_agg( genre.name ) genreS  ,
+    private void searchAndSortGame(Statement stmt, String where )throws SQLException{
+        try {
+            stmt.executeUpdate("DROP TABLE tempSortTable"+currentUID+";");
+        }catch (Exception e) {
+            System.out.println("\n");
+        }
+        String queryString = "SELECT * FROM tempSortTable"+currentUID+";";
+        String updateString = """
+            SELECT 
+                title,
+                array_agg( distinct concat(release.curr_price)) priceS,
+                array_agg( distinct concat(genre.name) ) genreS  ,
                 array_agg( distinct concat(release.release_date )) dateS,
                 array_agg( distinct concat(platforms.name )) platforms,
                 array_agg( distinct concat(devpub.name )) devpubs,
-                
+
                 SUM(play_video_game.sessionend - play_video_game.sessionstart) playtime,
                 AVG(video_game_rating.rating) rating
-                FROM videogame
 
+            INTO tempSortTable"""+
+            currentUID
+            +
+            """
+            
+            FROM videogame
                 LEFT JOIN release ON release.vgid = videogame.vgid
                 LEFT JOIN platforms ON platforms.pid = release.pid
                 LEFT JOIN published ON videogame.vgid = published.vgid
@@ -307,133 +312,86 @@ public class VideoGames {
                 LEFT JOIN video_game_rating ON videogame.vgid = video_game_rating.vgid
                 LEFT JOIN video_game_genre ON videogame.vgid = video_game_genre.vgid
                 LEFT JOIN genre ON genre.gid = video_game_genre.gid
-                """
-                +additional_join
-                +where
-                +" GROUP BY title, esrb_rating "
-                +order+";");
-        while(res.next()){
-            String pString = "\n\t-->) Title: '" + res.getString("title");
-            pString += "'  ESRB Rating: '" + res.getString("esrb_rating");
-            pString += "'  Platforms:" + none_ify(res.getString("platforms"));
-            pString += "  Devs/Pubs:"+ none_ify(res.getString("devpubs"));
-            pString += "  Playtime:" + cut_rat(res.getString("playtime"),1);
-            pString += "  Rating:" + cut_rat(res.getString("rating"),0);
-            System.out.println(pString);
-        }
+            """
+            +where
+            +" GROUP BY title "
+            +" ORDER BY title ASC, dateS ASC;";
+        
+        stmt.executeUpdate(updateString);
+        ResultSet res = stmt.executeQuery(queryString);
+        printResultSet(res);
         res.close();
+        int inp = getInput("""
+            Would You Like to sort this table?
+            1. Yes
+            2. No
+
+            Choose an option( numerical ) : """);
+        
+        if(inp==1){
+            PlayerSortView(stmt);
+        }
+        stmt.executeUpdate(" DROP table tempSortTable"+currentUID+";");
         System.out.println("\n");
     }
 
-    private String getOrderString(){
-        String retVal="ORDER BY ";
-        boolean first = true;
-        if(sortArr.size()>0){
-            for(int i = 0; i<sortArr.size();i++){
-                if(!first)retVal+=" , ";
-                retVal+= sortArr.get(i);
-                if(!sortArr.get(i).equals("title")){
-                    retVal+="S ";
-                }
-                retVal+= " "+dirArr.get(i) + " ";
-                first = false;
-            }
-        }
+    public int PlayerSortView(Statement stmt) throws SQLException{
+        System.out.println("""
+        \n--Select category to sort by--
+            1. Title
+            2. Price
+            3. Genre
+            4. Release Date
+            5. Exit Sort Menu
+        """);
+        int inp = getInput("Choose an option: "); 
+        String sortQuery = "SELECT * FROM tempSortTable"+currentUID;
+            
+        switch (inp) {
+            case 1:
+                sortQuery += " ORDER BY title ";
+                break;
+            case 2:
+                sortQuery += " ORDER BY priceS ";
+                break;
 
-        if(!sortArr.contains("title")){
-            if(!first)retVal+=" , ";
-            retVal += "title ASC ";
+            case 3:
+                sortQuery += " ORDER BY genreS ";
+                break;
+            case 4:
+                sortQuery += " ORDER BY dateS ";
+                break;  
+            case 5:
+                System.out.println("Okie Dokie, Exiting Menu");
+                return 1;
+            default:
+                System.out.println("Invalid Input! ");
+                return 1;
         }
-        if(!sortArr.contains("date")) retVal += ", dateS ASC ";
-        System.out.println(retVal);
-        return retVal;
+        System.out.println("""
+        \n--Would you like to sort by--
+            1. ASC
+            2. DESC
+        """);
+        inp = getInput("Choose sort option: ");  
+        switch (inp) {
+            case 1:
+                sortQuery += "ASC; ";
+                break;
+            case 2:
+                sortQuery += "DESC; ";
+                break;
+            default:
+                sortQuery += "ASC; ";
+                System.out.println("Invalid input, using default method ASC");
+                break;
+        }
+        ResultSet res = stmt.executeQuery(sortQuery);  
+        
+        
+        printResultSet(res);
+        return 0;
     }
 
-    public int PlayerSortView(){
-        while(true){
-            System.out.println("""
-            \n--Select action to continue--
-                1. View Current Sorting Priority
-                2. Add Sorting Criteria
-                3. Remove Sorting Criteria
-                4. Return to Video Game Menu
-                5. Return to Main Menu
-            """);
-            int lind = -1;
-            Set<String> allCrit = new HashSet<String>();
-            allCrit.add("title");
-            allCrit.add("price");
-            allCrit.add("genre");
-            allCrit.add("date");
-            int inp = getInput("Choose an option: ");
-            if(inp==-1){return 0;}
-            switch(inp){
-                case 1:
-                    System.out.println("Current Sorting Priority : ");
-                    lind = 1;
-                    for(int i = 0; i<sortArr.size(); i++){
-                        System.out.println("\t("+lind+") Video Game "+sortArr.get(i) + " \t( "+dirArr.get(i)+" )");
-                        lind++;
-                    }
-                    if(!sortArr.contains("title")) System.out.println("\t("+lind++ +") " + "Video Game Title  \t( ASC )");
-                    if(!sortArr.contains("date")) System.out.println("\t("+lind+") " + "Video Game Date \t( ASC )");
-                    break;
-                case 2:
-                    System.out.println("Addable Sorting Criteria: ");
-                    lind = 1;
-                    for(String i:allCrit){
-                        System.out.println("\t("+lind+") " + i);
-                        lind++;
-                    }
-                    System.out.println("Enter criteria(name) to add: ");
-                    scanner.nextLine();
-                    String critName = scanner.nextLine().toLowerCase();
-                    System.out.println("Order By ASC or DESC? : ");
-                    String critOrd = scanner.nextLine();
-                    critOrd = critOrd.toUpperCase();
-
-                    if( !allCrit.contains(critName)){
-                        System.out.println("Invalid Criteria name");
-                        break;
-                    }else if( ! (critOrd.equals("ASC")||critOrd.equals("DESC"))){
-                        System.out.println("Invalid Filter direction");
-                        break;
-                    }
-
-                    if(sortArr.contains(critName)){
-                        dirArr.remove(sortArr.indexOf(critName));
-                        sortArr.remove(critName);
-                    }
-                    dirArr.add(0, critOrd);
-                    sortArr.add(0,critName);
-                    System.out.println("New Sorting Criteria Added !!");
-                    break;
-                case 3:
-                    System.out.println("Current Removable Sorting Priority : ");
-                    lind = 1;
-                    for(int i = 0; i<sortArr.size(); i++){
-                        System.out.println("\t("+lind+") "+sortArr.get(i) + " ( "+dirArr.get(i)+" )");
-                        lind++;
-                    }
-                    System.out.println("Enter criteria(name) to remove: ");
-                    String remCrit = scanner.nextLine().toLowerCase();remCrit = scanner.nextLine().toLowerCase();
-                    if( !allCrit.contains(remCrit)){
-                        System.out.println("Invalid Criteria name");
-                        break;
-                    }else if(!sortArr.contains(remCrit)){
-                        System.out.println("Criteria not added yet");
-                        break;
-                    }
-                    dirArr.remove(sortArr.indexOf(remCrit));
-                    sortArr.remove(remCrit);
-                    System.out.println("Criteria Removed !!");
-                    break;
-                case 4:
-                    return 0;
-                case 5:
-                    return 1;
-            }
-        }
-    }
 
 }
