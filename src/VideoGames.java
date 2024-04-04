@@ -5,8 +5,6 @@ public class VideoGames {
     Statement stmt;
     Scanner scanner;
     String currentUID = "";
-    ArrayList<String> dirArr = new ArrayList<String>();
-    ArrayList<String> sortArr = new ArrayList<String>();
 
     private int getInput(String ques){
         System.out.print(ques);
@@ -51,8 +49,7 @@ public class VideoGames {
 
                     case 3: inp = PlayerView(currentUID); break;
                     case 4: return 3;
-                    case 5: sortArr.clear();
-                            dirArr.clear();
+                    case 5: 
                             return 0;
                 }
             }
