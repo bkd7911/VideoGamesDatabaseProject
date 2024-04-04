@@ -22,8 +22,8 @@ public class VideoGames {
     // Class Constructor
     public VideoGames(Statement stmt,  Scanner scanner, String currentUID){
         this.stmt = stmt;
-            this.scanner = scanner;
-            this.currentUID = currentUID;
+        this.scanner = scanner;
+        this.currentUID = currentUID;
     }
     
     // Main VideoGameMenu Functionality
@@ -79,9 +79,23 @@ public class VideoGames {
                     query = scanner.nextLine();
                     int vgid = Integer.parseInt(query);
                     if(vgid == 0){
-                        res = stmt.executeQuery("SELECT * FROM videogame ORDER BY RANDOM() LIMIT 1;");
-                        if(res.next()){
-                            vgid = res.getInt("vgid");
+                        System.out.print("Enter Name of Collection to Randomly Choose From: ");
+                        String collectionName = scanner.nextLine();
+                        res = stmt.executeQuery("SELECT cid FROM collections WHERE uid = '" + currentUID + "' AND name = '" + collectionName + "';");
+                        if (res.next()) {
+                            String cid = res.getString("cid");
+                            res = stmt.executeQuery("SELECT * FROM video_game_collection WHERE cid = '" + cid + "' ORDER BY RANDOM() LIMIT 1;");
+                            if (res.next()) {
+                                vgid = res.getInt("vgid");
+                            }
+                            else {
+                                System.out.println("No Games in Collection To Play.");
+                                break;
+                            }
+                        }
+                        else {
+                            System.out.println("No Collection With Given Name.");
+                            break;
                         }
                     }
                     res = stmt.executeQuery("SELECT * FROM videogame WHERE vgid ="+vgid+";");
@@ -93,7 +107,9 @@ public class VideoGames {
                         // Calculate session end time based on the start time and length of session
                         Date sessionEnd = new Date(sessionStart.getTime() +( sessionLength * 60000L));
 
-                        stmt.executeUpdate("INSERT INTO session (uid, vgid, sessionstart, sessionend) VALUES ("+currentUID+","+vgid+",'"+sessionStart+"','"+sessionEnd+"');");
+                        stmt.executeUpdate("INSERT INTO play_video_game (uid, vgid, sessionstart, sessionend) VALUES ("+currentUID+","+vgid+",'"+sessionStart+"','"+sessionEnd+"');");
+
+
                     }
                     else {
                         System.out.println("Invalid game ID");
@@ -121,7 +137,6 @@ public class VideoGames {
         }
         return 0;
     }
-    
     // Menu Functionality to search and sort games
     public int PlayerSearchView() throws SQLException{
         int inp = -1;
