@@ -1,5 +1,6 @@
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
 public class VideoGames {
     Statement stmt;
     Scanner scanner;
@@ -91,8 +92,6 @@ public class VideoGames {
                         Date sessionEnd = new Date(sessionStart.getTime() +( sessionLength * 60000L));
 
                         stmt.executeUpdate("INSERT INTO session (uid, vgid, sessionstart, sessionend) VALUES ("+currentUID+","+vgid+",'"+sessionStart+"','"+sessionEnd+"');");
-
-
                     }
                     else {
                         System.out.println("Invalid game ID");
@@ -262,31 +261,34 @@ public class VideoGames {
     }
     // Joins tables and queries it to print results based on given conditions
     private void DisplayGame(Statement stmt, String additional_join,String where, String order)throws SQLException{
-        ResultSet res = stmt.executeQuery("""
+        String queryString = """
             SELECT title,
-                array_agg( release.curr_price) priceS,
-                array_agg( genre.name ) genreS  ,
+                array_agg( distinct concat(release.curr_price)) priceS,
+                array_agg( distinct concat(genre.name) ) genreS  ,
                 array_agg( distinct concat(release.release_date )) dateS,
                 array_agg( distinct concat(platforms.name )) platforms,
                 array_agg( distinct concat(devpub.name )) devpubs,
-                
-                SUM(session.sessionend - session.sessionstart) playtime,
-                AVG(video_game_rating.rating) rating
-                FROM videogame
 
+                SUM(play_video_game.sessionend - play_video_game.sessionstart) playtime,
+                AVG(video_game_rating.rating) rating
+
+            FROM videogame
                 LEFT JOIN release ON release.vgid = videogame.vgid
                 LEFT JOIN platforms ON platforms.pid = release.pid
                 LEFT JOIN published ON videogame.vgid = published.vgid
                 LEFT JOIN devpub ON published.dpid = devpub.dpid
-                LEFT JOIN session ON videogame.vgid = session.vgid
+                LEFT JOIN play_video_game ON videogame.vgid = play_video_game.vgid
                 LEFT JOIN video_game_rating ON videogame.vgid = video_game_rating.vgid
                 LEFT JOIN video_game_genre ON videogame.vgid = video_game_genre.vgid
                 LEFT JOIN genre ON genre.gid = video_game_genre.gid
-                """
+            """
                 +additional_join
                 +where
                 +" GROUP BY title "
-                +order+";");
+                +order+";";
+        //System.out.println(queryString);
+        ResultSet res = stmt.executeQuery(queryString);
+        
         while(res.next()){
             String pString = "\n\t-->) Title: '" + res.getString("title");
             pString += "'  Platforms:" + none_ify(res.getString("platforms"));
@@ -318,8 +320,8 @@ public class VideoGames {
             if(!first)retVal+=" , ";
             retVal += "title ASC ";
         }
-        if(!sortArr.contains("date")) retVal += ", date ASC ";
-        System.out.println(retVal);
+        if(!sortArr.contains("date")) retVal += ", dateS ASC ";
+        //System.out.println(retVal);
         return retVal;
     }
 
