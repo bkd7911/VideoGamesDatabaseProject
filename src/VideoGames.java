@@ -3,8 +3,15 @@ import java.util.*;
 import java.util.Date;
 public class VideoGames {
     Statement stmt;
-    Scanner scanner;
     String currentUID = "";
+    Scanner scanner;
+
+    // Class Constructor
+    public VideoGames(Statement stmt,  Scanner scanner, String currentUID){
+        this.stmt = stmt;
+        this.scanner = scanner;
+        this.currentUID = currentUID;
+    }
 
     private int getInput(String ques){
         System.out.print(ques);
@@ -18,12 +25,6 @@ public class VideoGames {
             System.out.println("Invalid Input, try again: ");
             return -1;
         }
-    }
-    // Class Constructor
-    public VideoGames(Statement stmt,  Scanner scanner, String currentUID){
-        this.stmt = stmt;
-        this.scanner = scanner;
-        this.currentUID = currentUID;
     }
     
     // Main VideoGameMenu Functionality
