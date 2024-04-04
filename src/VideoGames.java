@@ -140,9 +140,9 @@ public class VideoGames {
     }
     // Menu Functionality to search and sort games
     public int PlayerSearchView() throws SQLException{
-        int inp = -1;
+        int inp = 0;
         String where = "";
-        while(inp!=7){
+        while(inp!=8||inp!=7||inp!=-1){
             System.out.println("""
             \n--Select action to continue--
                 1. Search games by Name  
@@ -156,31 +156,32 @@ public class VideoGames {
                 9. Return to Main Menu
             """);
             inp = getInput("Choose an option: ");
+            scanner.nextLine();
             switch(inp){
                 case 1:
                     System.out.print("Enter name of game (partial or full): ");
-                    String title = scanner.nextLine();title = scanner.nextLine();
+                    String title = scanner.nextLine();
                     where = "WHERE videogame.title LIKE '%"+title+"%'";
                     System.out.println("The following games match the name : "+ title);
                     searchAndSortGame(stmt, where);
                     break;
                 case 2:
                     System.out.print("Enter Rating to seach by( E/E10+/T/M/AO): ");
-                    String rat = scanner.nextLine();rat = scanner.nextLine();
+                    String rat = scanner.nextLine();
                     where = "WHERE videogame.esrb_rating = '"+rat+"'";
                     System.out.println("The following are rated : "+ rat);
                     searchAndSortGame(stmt, where);
                     break;
                 case 3:
                     System.out.print("Enter Genre Name to search by: ");
-                    String genre = scanner.nextLine();genre = scanner.nextLine();
+                    String genre = scanner.nextLine();
                     where = "WHERE genre.name LIKE '%"+genre+"%'";
                     System.out.println("The following games have the genre matching: "+ genre);
                     searchAndSortGame(stmt,where);
                     break;
                 case 4:
                     System.out.print("Enter Platform to seach for: ");
-                    String plat = scanner.nextLine();plat = scanner.nextLine();
+                    String plat = scanner.nextLine();
                     where = "WHERE platforms.name ='"+plat+"'";
                     System.out.println("The following are playable on the platform : "+ plat );
                     searchAndSortGame(stmt, where);
@@ -212,7 +213,7 @@ public class VideoGames {
                     break;
                 case 6:
                     System.out.print("Enter Develepor name to seach by: ");
-                    String dev = scanner.nextLine();dev = scanner.nextLine();
+                    String dev = scanner.nextLine();
                     if(dev.length()==0)dev = "ScipityScapady";
                     where = "WHERE devpub.name ='%"+dev+"%'";
                     System.out.println("The following games are made by : "+ dev);
