@@ -431,6 +431,9 @@ public class VideoGames {
                 case 2:
                     break;
                 case 3:
+                    int year = getInput("Enter year: ");
+                    int month = getInput("Enter Month Number : ");
+                    
                     break;
                 case 4:
                     return 0;
