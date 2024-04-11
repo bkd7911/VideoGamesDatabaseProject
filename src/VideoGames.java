@@ -411,7 +411,31 @@ public class VideoGames {
         return 0;
     }
 
-
+    //Creates Start/End date range for a calender month
+    String[] getDateRange(int y, int m){
+        int d = 30;
+        String[] retVal = new String[2];
+        int[] bMonths = {1,3,5,7,8,10,12};
+        if(m==2){
+            if(y%4==0){
+                d=29;
+            }else{
+                d=28;
+            }
+        }else{
+            for(int i:bMonths){
+                if(m==i){
+                    d=31;
+                    break;
+                }
+            }
+        }
+        
+        retVal[0] = y+"-"+m+"-01";
+        retVal[1] = y+"-"+m+"-"+d;
+        return retVal;
+    }
+    //Menu to Show top reccomendation
     public int topSortMenu() throws SQLException{
         int inp = 0;
         while(inp!=-1 || inp!=4){
@@ -420,8 +444,9 @@ public class VideoGames {
                 1. Top 20 Popular Games from 90 days! 
                 2. Top 20 Games Playes by your followers!
                 3. Top 5 Releases of a calender month
-                4. Exit to Video-Game Menu
-                5. Exit to Main Menu
+                4. Get Our Reccomendations for Games to Play
+                5. Exit to Video-Game Menu
+                6. Exit to Main Menu
                 Choose an option: """);
 
             switch (inp) {
@@ -433,11 +458,20 @@ public class VideoGames {
                 case 3:
                     int year = getInput("Enter year: ");
                     int month = getInput("Enter Month Number : ");
-                    
+                    if(!(month>=1 && month<=12)){
+                        System.out.println("Silly Goose! Months only range from 1->12!!");
+                        break;
+                    }
+                    String[] dRange = getDateRange(year, month);
+                    searchAndSortGame(stmt, " WHERE (release.release_date >= '"+dRange[0]+"') AND (release.release_date <= '"+dRange[1]+"') ", 3);
                     break;
+                
                 case 4:
-                    return 0;
+                    //generateReccomendtions()
+                    break;
                 case 5:
+                    return 0;
+                case 6:
                     return 1;
                 default:
                     System.out.println("nWhoopsie! Looks Like you chose an invalid option");
@@ -446,13 +480,19 @@ public class VideoGames {
         }
         return 0;
     }
+    
+    // Retrives data as needed for topSortMenu
     public int topSortView(int topper) throws SQLException{
+        int limit = 20;
         String updateString = "UPDATE tempSortTable"+currentUID +" SET playtime = INTERVAL '0' day WHERE playtime is NULL ;";
         String queryString = "SELECT * FROM tempSortTable"+currentUID;
         switch (topper) {
-            case 1:
+            case 1|3:
+                if(topper==3){
+                    limit=5;
+                }
                 queryString += " ORDER BY rating DESC, playtime DESC ";
-                queryString += " LIMIT 20; ";
+                queryString += " LIMIT "+limit+";";
                 break;
         
             default:

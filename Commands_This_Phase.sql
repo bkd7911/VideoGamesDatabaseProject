@@ -47,3 +47,7 @@ WHERE (release.release_date > current_date - interval '90' day) AND (release.rel
 _________________________________________________________________________________
 ---------------------------------------------------------------------------------
 UPDATE  tempSortTable<UID> SET playtime = 0 WHERE playtime = NULL;
+
+_________________________________________________________________________________
+---------------------------------------------------------------------------------
+WHERE (release.release_date >= '<StartDate>') AND (release.release_date <= '<EndDate>');
