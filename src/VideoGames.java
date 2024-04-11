@@ -444,7 +444,6 @@ public class VideoGames {
         return 0;
     }
     public int topSortView(int topper) throws SQLException{
-        int limit = 10;
         String updateString = "UPDATE tempSortTable"+currentUID +" SET playtime = INTERVAL '0' day WHERE playtime is NULL ;";
         String queryString = "SELECT * FROM tempSortTable"+currentUID;
         switch (topper) {
