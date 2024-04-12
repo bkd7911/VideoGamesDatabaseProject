@@ -509,7 +509,8 @@ public class VideoGames {
     // Retrives data as needed for topSortMenu
     public int topSortView(int topper) throws SQLException{
         int limit = 20;
-        String updateString = "UPDATE tempSortTable"+currentUID +" SET playtime = INTERVAL '0' day WHERE playtime is NULL ;";
+        String updateString1 = "UPDATE tempSortTable"+currentUID +" SET playtime = INTERVAL '0' day WHERE playtime is NULL ;";
+        String updateString2 = "UPDATE tempSortTable"+currentUID +" SET rating = 0  WHERE rating is NULL ;";
         String queryString = "SELECT * FROM tempSortTable"+currentUID;
         switch (topper) {
             case 1|3:
@@ -524,12 +525,13 @@ public class VideoGames {
                 for(String i: friendList){
                     queryString+=" OR '"+i+"' = ANY(players)";
                 }
-                queryString +=" LIMIT 20;";
+                queryString +=" ORDER BY rating DESC, playtime DESC LIMIT 20;";
                 break;
             default:
                 break;
         }
-        stmt.executeUpdate(updateString);
+        stmt.executeUpdate(updateString1);
+        stmt.executeUpdate(updateString2);
         ResultSet res = stmt.executeQuery(queryString);
         if(res!=null){
             printResultSet(res);
