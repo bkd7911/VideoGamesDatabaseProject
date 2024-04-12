@@ -7,6 +7,7 @@ SELECT
     array_agg( distinct concat(release.release_date )) dateS,
     array_agg( distinct concat(platforms.name )) platforms,
     array_agg( distinct concat(devpub.name )) devpubs,
+    array_agg( distinct concat(play_video_game.uid)) players,
 
     SUM(play_video_game.sessionend - play_video_game.sessionstart) playtime,
     AVG(video_game_rating.rating) rating
@@ -51,3 +52,7 @@ UPDATE  tempSortTable<UID> SET playtime = 0 WHERE playtime = NULL;
 _________________________________________________________________________________
 ---------------------------------------------------------------------------------
 WHERE (release.release_date >= '<StartDate>') AND (release.release_date <= '<EndDate>');
+
+_________________________________________________________________________________
+---------------------------------------------------------------------------------
+WHERE 0=1 OR '<uid>' = ANY(players)

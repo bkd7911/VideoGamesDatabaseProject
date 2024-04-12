@@ -5,6 +5,7 @@ public class VideoGames {
     Statement stmt;
     String currentUID = "";
     Scanner scanner;
+    String[] friendList;
 
     // DONE Class Constructor 
     public VideoGames(Statement stmt,  Scanner scanner, String currentUID){
@@ -302,12 +303,13 @@ public class VideoGames {
         String updateString = """
             SELECT 
                 title,
-                array_agg( distinct concat(release.curr_price)) priceS,
-                array_agg( distinct concat(genre.name) ) genreS  ,
-                array_agg( distinct concat(release.release_date )) dateS,
+                array_agg( distinct concat(release.curr_price)) prices,
+                array_agg( distinct concat(genre.name) ) genres  ,
+                array_agg( distinct concat(release.release_date )) dates,
                 array_agg( distinct concat(platforms.name )) platforms,
                 array_agg( distinct concat(devpub.name )) devpubs,
-
+                array_agg( distinct concat(play_video_game.uid)) players,
+                
                 SUM(play_video_game.sessionend - play_video_game.sessionstart) playtime,
                 AVG(video_game_rating.rating) rating
 
@@ -454,6 +456,20 @@ public class VideoGames {
                     searchAndSortGame(stmt, " WHERE (release.release_date > current_date - interval '90' day) AND (release.release_date <= current_date) ", 1);
                     break;
                 case 2:
+                    String tempStr;
+                    String queryString = "SELECT * FROM friends WHERE uid1 = '"+currentUID+"' or uid2 = '"+currentUID+"';";
+                    ResultSet res = stmt.executeQuery(queryString);
+                    ArrayList<String> fren = new ArrayList<String>();
+                    while(res.next()){
+                        tempStr = res.getString("uid1");
+                        if(!fren.contains(tempStr)){fren.add(tempStr);}
+                        tempStr = res.getString("uid2");
+                        if(!fren.contains(tempStr)){fren.add(tempStr);}
+                    }
+                    fren.remove(currentUID);
+                    String[] freinds = fren.toArray(new String[fren.size()]);
+                    res.close();
+                    getUserGames(freinds);
                     break;
                 case 3:
                     int year = getInput("Enter year: ");
@@ -481,6 +497,15 @@ public class VideoGames {
         return 0;
     }
     
+    public int getUserGames(String[] users) throws SQLException{
+        if(users.length==0){
+            System.out.println("Uh Oh, Looks Like You're just Lonely Lad With No Followers! Which is why we can't display their games. :( ");
+            return 0;
+        }
+        this.friendList = users;
+        searchAndSortGame(stmt, "", 2);        
+        return 0;
+    }
     // Retrives data as needed for topSortMenu
     public int topSortView(int topper) throws SQLException{
         int limit = 20;
@@ -494,7 +519,13 @@ public class VideoGames {
                 queryString += " ORDER BY rating DESC, playtime DESC ";
                 queryString += " LIMIT "+limit+";";
                 break;
-        
+            case 2:
+                queryString +=" WHERE 0=1";
+                for(String i: friendList){
+                    queryString+=" OR '"+i+"' = ANY(players)";
+                }
+                queryString +=" LIMIT 20;";
+                break;
             default:
                 break;
         }
@@ -506,5 +537,6 @@ public class VideoGames {
 
         return 0;
     }
+  
     
 }
