@@ -444,9 +444,9 @@ public class VideoGames {
             inp = getInput("""
                 \n--Select Criteria For Top Games--
                 1. Top 20 Popular Games from 90 days! 
-                2. Top 20 Games Playes by your followers!
+                2. Top 20 Games Played by your followers!
                 3. Top 5 Releases of a calender month
-                4. Get Our Reccomendations for Games to Play
+                4. Get Our Recommendations for Games to Play
                 5. Exit to Video-Game Menu
                 6. Exit to Main Menu
                 Choose an option: """);
@@ -483,7 +483,7 @@ public class VideoGames {
                     break;
                 
                 case 4:
-                    //generateReccomendtions()
+                    generateRecommendations();
                     break;
                 case 5:
                     return 0;
@@ -539,6 +539,46 @@ public class VideoGames {
 
         return 0;
     }
-  
-    
+
+    private void generateRecommendations() throws SQLException {
+        String getRecs = "SELECT vg1.title,\n" +
+                "       array_agg( distinct concat(release.curr_price)) prices,\n" +
+                "       array_agg( distinct concat(genre.name) ) genres,\n" +
+                "       array_agg( distinct concat(release.release_date )) dates,\n" +
+                "       array_agg( distinct concat(platforms.name )) platforms,\n" +
+                "       array_agg( distinct concat(devpub.name )) devpubs,\n" +
+                "       array_agg( distinct concat(play_video_game.uid)) players,\n" +
+                "       SUM(play_video_game.sessionend - play_video_game.sessionstart) playtime,\n" +
+                "       AVG(video_game_rating.rating) AS rating\n" +
+                "FROM videogame AS vg1\n" +
+                "LEFT JOIN release ON release.vgid = vg1.vgid\n" +
+                "LEFT JOIN platforms ON platforms.pid = release.pid\n" +
+                "LEFT JOIN published ON vg1.vgid = published.vgid\n" +
+                "LEFT JOIN devpub ON published.dpid = devpub.dpid\n" +
+                "LEFT JOIN play_video_game ON vg1.vgid = play_video_game.vgid\n" +
+                "LEFT JOIN video_game_rating ON vg1.vgid = video_game_rating.vgid\n" +
+                "LEFT JOIN video_game_genre ON vg1.vgid = video_game_genre.vgid\n" +
+                "LEFT JOIN genre ON genre.gid = video_game_genre.gid\n" +
+                "WHERE video_game_rating.vgid = vg1.vgid AND vg1.vgid IN (\n" +
+                "    SELECT vgid FROM play_video_game WHERE vgid IN (\n" +
+                "        SELECT vg.vgid FROM videogame AS vg, video_game_genre AS vgg WHERE vg.vgid = vgg.vgid and vgg.gid IN (\n" +
+                "            SELECT gid FROM video_game_genre WHERE vgid IN (\n" +
+                "                SELECT pvg.vgid FROM play_video_game AS pvg WHERE uid = " + currentUID + ")\n" +
+                "            )\n" +
+                "        )\n" +
+                "    )\n" +
+                "GROUP BY vg1.vgid\n" +
+                "ORDER BY rating DESC\n" +
+                "LIMIT 5;";
+
+        ResultSet rs = stmt.executeQuery(getRecs);
+        if (rs != null) {
+            System.out.println("--Here's Some Games You and Similar Users Might Like!--");
+            printResultSet(rs);
+        }
+        else {
+            System.out.println("--No Games Found in Play History--");
+            System.out.println("Play Games to Get Some Recommendations");
+        }
+    }
 }
