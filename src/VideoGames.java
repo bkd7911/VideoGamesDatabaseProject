@@ -525,8 +525,14 @@ public class VideoGames {
                 for(String i: friendList){
                     queryString+=" OR '"+i+"' = ANY(players)";
                 }
-                queryString +=" ORDER BY rating DESC, playtime DESC LIMIT 20;";
+
+                    if(friendList[0].equals(currentUID)){
+                        limit=10;
+                    }
+
+                queryString +=" ORDER BY rating DESC, playtime DESC LIMIT "+limit+";";
                 break;
+
             default:
                 break;
         }
