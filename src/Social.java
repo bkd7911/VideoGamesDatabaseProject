@@ -62,7 +62,6 @@ public class Social {
         if (rs.next()) {
         count = rs.getInt("rowcount");
         }
-        rs.close();
         if (count == 1)
             System.out.println("\nUser " + currentUID + " has " + count + " collection.");
         else
@@ -74,7 +73,6 @@ public class Social {
         if (rs.next()) {
         count = rs.getInt("rowcount");
         }
-        rs.close();
         if (count == 1)
             System.out.println("\nUser " + currentUID + " has " + count + " follower.");
         else
@@ -91,6 +89,10 @@ public class Social {
             System.out.println("\nUser " + currentUID + " is following " + count + " user");
         else
             System.out.println("\nUser " + currentUID + " is following " + count + " users");
+
+        VideoGames vg = new VideoGames(stmt, scanner, currentUID);
+
+        count = vg.getUserGames(new String[]{currentUID});
 
 
 
