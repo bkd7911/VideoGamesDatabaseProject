@@ -3,28 +3,29 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
-public class Friends {
+public class Social {
 
     Statement stmt;
     String currentUID;
 
     Scanner scanner;
-    public Friends(Statement stmt, Scanner scanner, String currentUID) {
+    public Social(Statement stmt, Scanner scanner, String currentUID) {
         this.currentUID = currentUID;
         this.stmt = stmt;
         this.scanner = scanner;
     }
 
-    public void friendsMenu() throws SQLException {
+    public void socialMenu() throws SQLException {
 
 
 
         while (true) {
-            System.out.println("\n--Select Friends Action--");
+            System.out.println("\n--Select Social Action--");
             System.out.println("1. Find Friends");
             System.out.println("2. Follow User");
             System.out.println("3. Unfollow User");
-            System.out.println("4. Return to Main Menu");
+            System.out.println("4. My Profile");
+            System.out.println("5. Return to Main Menu");
             System.out.print("Choose an option: ");
             int option = scanner.nextInt();
             scanner.nextLine(); // Consume newline
@@ -40,12 +41,59 @@ public class Friends {
                     unfollowUser(stmt,scanner);
                     break;
                 case 4:
+                    userProfile(stmt,scanner);
+                    break;
+                case 5:
                     System.out.println("Returning to Main Menu...");
                     return;
                 default:
                     System.out.println("Invalid option.");
             }
         }
+    }
+
+    private void userProfile(Statement stmt, Scanner scanner) throws SQLException {
+
+
+
+        String sql = "SELECT COUNT(*) AS rowcount FROM collections WHERE uid = '" + currentUID + "'";
+        ResultSet rs = stmt.executeQuery(sql);
+        int count = 0;
+        if (rs.next()) {
+        count = rs.getInt("rowcount");
+        }
+        rs.close();
+        if (count == 1)
+            System.out.println("\nUser " + currentUID + " has " + count + " collection.");
+        else
+            System.out.println("\nUser " + currentUID + " has " + count + " collections.");
+
+        sql = "SELECT COUNT(*) AS rowcount FROM friends WHERE uid2 = '" + currentUID + "'";
+        rs = stmt.executeQuery(sql);
+        count = 0;
+        if (rs.next()) {
+        count = rs.getInt("rowcount");
+        }
+        rs.close();
+        if (count == 1)
+            System.out.println("\nUser " + currentUID + " has " + count + " follower.");
+        else
+            System.out.println("\nUser " + currentUID + " has " + count + " followers.");
+
+        sql = "SELECT COUNT(*) AS rowcount FROM friends WHERE uid1 = '" + currentUID + "'";
+        rs = stmt.executeQuery(sql);
+        count = 0;
+        if (rs.next()) {
+        count = rs.getInt("rowcount");
+        }
+        rs.close();
+        if (count == 1)
+            System.out.println("\nUser " + currentUID + " is following " + count + " user");
+        else
+            System.out.println("\nUser " + currentUID + " is following " + count + " users");
+
+
+
     }
 
     private void findUsersByEmail(Statement stmt, Scanner scanner) throws SQLException {
