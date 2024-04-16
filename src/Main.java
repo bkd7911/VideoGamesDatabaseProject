@@ -54,13 +54,13 @@ public class Main {
 
     private static void menuAccess(Scanner scanner, Statement stmt, Connection conn) throws SQLException {
         VideoGames vg = new VideoGames(stmt, scanner, currentUID);
-        Friends f = new Friends(stmt,scanner,currentUID);
+        Social s = new Social(stmt,scanner,currentUID);
         Collections c = new Collections(stmt,scanner,currentUID);
         while (true){
 
 
             System.out.println("\n--Select Menu To Access--");
-            System.out.println("1. Friends");
+            System.out.println("1. Social");
             System.out.println("2. Video Games");
             System.out.println("3. Collections");
             System.out.println("4. Exit");
@@ -70,7 +70,7 @@ public class Main {
 
             switch (option) {
                 case 1:
-                    f.friendsMenu();
+                    s.socialMenu();
                     break;
                 case 2:
                     int vgr = vg.VideoGameMenu();
