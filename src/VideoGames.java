@@ -121,7 +121,7 @@ public class VideoGames {
                     System.out.print("Enter ID of game: ");
                     String ratingVGID = scanner.nextLine();
                     ratingVGID = scanner.nextLine();
-                    float ratingVGIDNum = Float.parseFloat(ratingVGID);
+                    int ratingVGIDNum = Integer.parseInt(ratingVGID);
                     res = stmt.executeQuery("SELECT * FROM videogame WHERE vgid ="+ratingVGIDNum+";");
                     if (res.next()){
                         System.out.print("Enter Rating of game: ");
