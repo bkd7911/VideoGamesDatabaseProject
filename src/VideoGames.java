@@ -126,7 +126,7 @@ public class VideoGames {
                     if (res.next()){
                         System.out.print("Enter Rating of game: ");
                         ratingVGID = scanner.nextLine();
-                        int rating = Integer.parseInt(ratingVGID);
+                        float rating = Float.parseFloat(ratingVGID);
                         stmt.executeUpdate("INSERT INTO video_game_rating (uid,vgid, rating) VALUES ("+currentUID+","+ratingVGIDNum+", "+rating+");");
                     }
                     else {
